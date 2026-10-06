@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import encounters %}
 {% block title %}{{ s.name }} shiny · {{ owner.username }} · KRABHUNT{% endblock %}
 {% block content %}
 <p class="back">
@@ -37,7 +38,8 @@
     <dt>Méthode</dt>
     <dd>{{ s.method }}{% if s.odds == 1 %} <span class="odds">shiny garanti</span>{% elif s.odds %} <span class="odds">1/{{ s.odds | nombre }}{{ ' avec charme chroma' if s.shiny_charm }}</span>{% endif %}
       {% if odds_note %}<br><span class="muted-small">{{ odds_note }}</span>{% endif %}</dd>
-    {% if s.encounters is not none %}<dt>Rencontres</dt><dd>{{ s.encounters | nombre }}</dd>{% endif %}
+    {% if s.encounters is not none %}<dt>Rencontres</dt><dd>{{ encounters(s) }}{% if s.encounters_since is not none and s.encounters_since != s.encounters %}
+      <br><span class="muted-small">depuis la phase précédente (total de la chasse)</span>{% endif %}</dd>{% endif %}
     {% if s.duration is not none %}<dt>Temps de chasse</dt><dd>⏱ {{ s.duration | duree }}</dd>{% endif %}
     {% if rate %}<dt>Rythme</dt><dd>{{ rate | nombre }} rencontres / heure</dd>{% endif %}
     {% if s.caught_on %}<dt>Date de capture</dt><dd>{{ s.caught_on | date_fr }}</dd>{% endif %}

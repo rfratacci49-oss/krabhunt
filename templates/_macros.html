@@ -6,6 +6,15 @@
 </div>
 {% endmacro %}
 
+{# Rencontres d'un shiny ; dans une chasse avec phases : « depuis la phase précédente (total de la chasse) » #}
+{% macro encounters(s) %}
+{%- if s.encounters_since is not none and s.encounters_since != s.encounters -%}
+<span title="{{ s.encounters_since | nombre }} rencontres depuis la phase précédente, {{ s.encounters | nombre }} depuis le début de la chasse">{{ s.encounters_since | nombre }} <span class="encounters-total">({{ s.encounters | nombre }})</span></span>
+{%- else -%}
+{{ s.encounters | nombre }}
+{%- endif -%}
+{% endmacro %}
+
 {# Onglets des collections (Jeux officiels, PixelmonWorld, Cobblemon) vers la même page `endpoint` #}
 {% macro collection_tabs(endpoint) %}
 {% if collections | length > 1 %}

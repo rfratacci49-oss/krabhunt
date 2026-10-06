@@ -63,31 +63,61 @@
 
 <div class="counter-actions">
   <details class="card phase-form">
-    <summary>✨ Un shiny en phase !</summary>
-    <form method="post" action="{{ url_for('hunt_phase', hunt_id=hunt.id) }}">
-      <p class="hint">Il sera ajouté à votre collection ({{ hunt.game_label }}, {{ hunt.method }},
+    <summary>✨ Un shiny en phase (trouvé ou manqué) !</summary>
+    <form method="post" action="{{ url_for('hunt_phase', hunt_id=hunt.id) }}" id="phase-add">
+      <p class="hint" id="phase-hint-caught">Il sera ajouté à votre collection ({{ hunt.game_label }}, {{ hunt.method }},
         {{ 'temps écoulé' if hunt.mode == 'timer' else 'rencontre en cours' }}) comme phase {{ phases | length + 1 }} de cette chasse.</p>
+      <p class="hint" id="phase-hint-missed" hidden>Il sera ajouté à vos shiny manqués ({{ hunt.game_label }}, {{ hunt.method }},
+        {{ 'temps écoulé' if hunt.mode == 'timer' else 'rencontre en cours' }}) comme phase {{ phases | length + 1 }} de cette chasse.</p>
+      <label class="checkbox phase-missed">
+        <input type="checkbox" name="missed" value="1" id="phase-missed"> 😭 Shiny manqué (fuite, K.O.…)
+      </label>
       <label for="phase-species">Pokémon</label>
       <input id="phase-species" name="species" list="pokedex" required autocomplete="off">
       <datalist id="pokedex">
         {% for dex, name in pokedex.items() %}<option value="{{ name }}">#{{ dex }}</option>{% endfor %}
       </datalist>
       {{ form_picker('phase-species', select_id='phase-form') }}
+      <div class="phase-if-missed" hidden>
+        <label for="phase-reason">Motif <span class="opt">(facultatif)</span></label>
+        <input id="phase-reason" name="reason" list="phase-reasons" maxlength="200" placeholder="ex. Fuite, K.O. par erreur…">
+        <datalist id="phase-reasons">{% for r in fail_reasons %}<option value="{{ r }}">{% endfor %}</datalist>
+      </div>
       <fieldset>
-        <legend>Genre</legend>
+        <legend>Genre <span class="opt phase-if-missed" hidden>(facultatif)</span></legend>
         {% for key, label in genders.items() %}
           <label class="radio"><input type="radio" name="gender" value="{{ key }}" required> {{ label }}</label>
         {% endfor %}
       </fieldset>
-      <label for="phase-ball">Poké Ball <span class="opt">(facultatif)</span></label>
-      <select id="phase-ball" name="ball">
-        <option value="">—</option>
-        {% for key, (label, _) in balls.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
-      </select>
-      <label for="phase-nickname">Surnom <span class="opt">(facultatif)</span></label>
-      <input id="phase-nickname" name="nickname" maxlength="40">
-      <button type="submit">Ajouter la phase</button>
+      <div class="phase-if-caught">
+        <label for="phase-ball">Poké Ball <span class="opt">(facultatif)</span></label>
+        <select id="phase-ball" name="ball">
+          <option value="">—</option>
+          {% for key, (label, _) in balls.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+        </select>
+        <label for="phase-nickname">Surnom <span class="opt">(facultatif)</span></label>
+        <input id="phase-nickname" name="nickname" maxlength="40">
+      </div>
+      <button type="submit" id="phase-submit">Ajouter la phase</button>
     </form>
+    <script>
+      // « Shiny manqué » : motif à la place de la Ball et du surnom, genre facultatif
+      (() => {
+        const form = document.getElementById("phase-add");
+        const missed = document.getElementById("phase-missed");
+        const update = () => {
+          const on = missed.checked;
+          form.querySelectorAll(".phase-if-missed").forEach(el => { el.hidden = !on; });
+          form.querySelectorAll(".phase-if-caught").forEach(el => { el.hidden = on; });
+          document.getElementById("phase-hint-caught").hidden = on;
+          document.getElementById("phase-hint-missed").hidden = !on;
+          form.querySelectorAll("input[name=gender]").forEach(r => { r.required = !on; });
+          document.getElementById("phase-submit").textContent = on ? "Ajouter la phase manquée" : "Ajouter la phase";
+        };
+        missed.addEventListener("change", update);
+        update();
+      })();
+    </script>
   </details>
 
   <div class="found-actions">

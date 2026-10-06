@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import collection_tabs with context %}
+{% from "_macros.html" import collection_tabs, encounters with context %}
 {% block title %}{{ coll_label ~ ' · ' if coll != 'principale' }}Collection de {{ owner.username }} · KRABHUNT{% endblock %}
 {% block content %}
 {% macro choice(name, label, items, all_label) %}
@@ -133,7 +133,7 @@
           {{ s.ball_label }}
         </dd>
       {% endif %}
-      {% if s.encounters is not none %}<dt>Rencontres</dt><dd>{{ '{:,}'.format(s.encounters).replace(',', ' ') }}</dd>{% endif %}
+      {% if s.encounters is not none %}<dt>Rencontres</dt><dd>{{ encounters(s) }}</dd>{% endif %}
       {% if s.duration is not none %}<dt>Temps</dt><dd>⏱ {{ s.duration | duree }}</dd>{% endif %}
       {% if s.caught_on %}<dt>Date</dt><dd>{{ s.caught_on | date_fr }}</dd>{% endif %}
     </dl>

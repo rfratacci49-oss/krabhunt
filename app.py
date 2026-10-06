@@ -305,6 +305,7 @@ def to_view(row):
     shiny["phase_number"] = None  # phase : son numéro dans la chasse
     shiny["phase_target"] = None  # phase : nom de la cible
     shiny["phase_target_id"] = None  # phase : id de la cible (chasse terminée)
+    shiny["encounters_since"] = None  # chasse avec phases : rencontres depuis la phase précédente
     return shiny
 
 
@@ -321,7 +322,15 @@ def phase_columns(key):
 # Nom d'une phase (shiny ou manqué) dans les requêtes sur hunt_phases / hunt_pending_phases (alias p)
 PHASE_NAME_JOIN = """LEFT JOIN shinies ps ON ps.id = p.shiny_id LEFT JOIN fails pf ON pf.id = p.fail_id"""
 PHASE_NAME_COLUMNS = """COALESCE(ps.species_id, pf.species_id) AS phase_species, COALESCE(ps.form, pf.form) AS phase_form,
-                        ps.nickname AS phase_nickname"""
+                        ps.nickname AS phase_nickname, COALESCE(ps.encounters, pf.encounters) AS phase_encounters"""
+
+
+def since_previous(encounters, previous):
+    """Rencontres depuis la phase précédente : les rencontres enregistrées sont cumulées depuis le
+    début de la chasse. None si l'une des deux valeurs manque ou si elles ne sont pas croissantes."""
+    if encounters is None or previous is None or encounters < previous:
+        return None
+    return encounters - previous
 
 
 def phase_name(row):
@@ -338,34 +347,60 @@ def attach_phases(shinies):
     by_id = {s["id"]: s for s in shinies}
     if not by_id:
         return
-    placeholders = ",".join("?" * len(by_id))
-    for row in get_db().execute(
-        f"""SELECT p.target_id, p.shiny_id, p.fail_id, {PHASE_NAME_COLUMNS}
-            FROM hunt_phases p {PHASE_NAME_JOIN}
-            WHERE p.target_id IN ({placeholders}) ORDER BY p.target_id, p.position""",
-        list(by_id),
+    ids = list(by_id)
+    placeholders = ",".join("?" * len(ids))
+    db = get_db()
+
+    # Chasses terminées dont un des shiny donnés est la cible ou une phase, phase par phase
+    chains = {}
+    for row in db.execute(
+        f"""SELECT p.target_id, p.shiny_id, p.fail_id, {PHASE_NAME_COLUMNS},
+                   t.encounters AS target_encounters, t.nickname AS target_nickname,
+                   t.species_id AS target_species, t.form AS target_form
+            FROM hunt_phases p JOIN shinies t ON t.id = p.target_id {PHASE_NAME_JOIN}
+            WHERE p.target_id IN (SELECT target_id FROM hunt_phases
+                                  WHERE target_id IN ({placeholders}) OR shiny_id IN ({placeholders}))
+            ORDER BY p.target_id, p.position""",
+        ids + ids,
     ):
-        target = by_id[row["target_id"]]
-        target["phases"].append(phase_name(row))
-        phase = by_id.get(row["shiny_id"])
-        if phase is None:
-            continue
-        phase["phase_number"] = len(target["phases"])
-        phase["phase_target"] = target["name"]
-        phase["phase_target_id"] = target["id"]
+        chains.setdefault(row["target_id"], []).append(row)
+    for target_id, rows in chains.items():
+        first = rows[0]
+        target_name = first["target_nickname"] or display_name(first["target_species"], first["target_form"])
+        previous = 0
+        for number, row in enumerate(rows, start=1):
+            phase = by_id.get(row["shiny_id"])
+            if phase is not None:
+                phase["phase_number"] = number
+                phase["phase_target"] = target_name
+                phase["phase_target_id"] = target_id
+                phase["encounters_since"] = since_previous(row["phase_encounters"], previous)
+            previous = row["phase_encounters"] if previous is not None else None
+        target = by_id.get(target_id)
+        if target is not None:
+            target["phases"] = [phase_name(row) for row in rows]
+            target["encounters_since"] = since_previous(first["target_encounters"], previous)
 
     # Phases d'une chasse encore en cours au compteur
-    for row in get_db().execute(
-        f"""SELECT p.shiny_id, h.species_id, h.form,
-                   (SELECT COUNT(*) FROM hunt_pending_phases o
-                    WHERE o.hunt_id = p.hunt_id AND o.position <= p.position) AS number
-            FROM hunt_pending_phases p JOIN hunts h ON h.id = p.hunt_id
-            WHERE p.shiny_id IN ({placeholders})""",
-        list(by_id),
+    pending = {}
+    for row in db.execute(
+        f"""SELECT p.hunt_id, p.shiny_id, p.fail_id, h.species_id, h.form,
+                   COALESCE(ps.encounters, pf.encounters) AS phase_encounters
+            FROM hunt_pending_phases p JOIN hunts h ON h.id = p.hunt_id {PHASE_NAME_JOIN}
+            WHERE p.hunt_id IN (SELECT hunt_id FROM hunt_pending_phases WHERE shiny_id IN ({placeholders}))
+            ORDER BY p.hunt_id, p.position""",
+        ids,
     ):
-        phase = by_id[row["shiny_id"]]
-        phase["phase_number"] = row["number"]
-        phase["phase_target"] = f"{display_name(row['species_id'], row['form'])} (en cours)"
+        pending.setdefault(row["hunt_id"], []).append(row)
+    for rows in pending.values():
+        previous = 0
+        for number, row in enumerate(rows, start=1):
+            phase = by_id.get(row["shiny_id"])
+            if phase is not None:
+                phase["phase_number"] = number
+                phase["phase_target"] = f"{display_name(row['species_id'], row['form'])} (en cours)"
+                phase["encounters_since"] = since_previous(row["phase_encounters"], previous)
+            previous = row["phase_encounters"] if previous is not None else None
 
 
 def get_own_shiny(shiny_id):
@@ -1455,6 +1490,7 @@ def hunt_counter(hunt_id):
         "hunt_counter.html",
         hunt=hunt,
         phases=phase_list("hunt_pending_phases", "hunt_id", hunt_id),
+        fail_reasons=FAIL_REASONS,
         pokedex=POKEDEX,
         genders=GENDERS,
         balls=BALLS,
@@ -1510,17 +1546,39 @@ def hunt_timer(hunt_id):
 @app.route("/compteur/<int:hunt_id>/phase", methods=["POST"])
 @login_required
 def hunt_phase(hunt_id):
-    """Un shiny non ciblé est apparu : il entre dans la collection comme phase de la chasse."""
+    """Un shiny non ciblé est apparu : il entre dans la collection (ou dans les shiny manqués,
+    case « Shiny manqué ») comme phase de la chasse."""
     hunt = get_own_hunt(hunt_id)
     species_name = request.form.get("species", "").strip()
     species_id = find_species(species_name)
     gender = request.form.get("gender", "")
     ball = request.form.get("ball", "") or None
+    missed = request.form.get("missed") == "1"
     variant, variant_error = parse_variant(species_id, request.form)
     if species_id is None:
         flash(f"Pokémon inconnu : « {species_name} ».", "error")
     elif variant_error:
         flash(variant_error, "error")
+    elif missed and gender and gender not in GENDERS:
+        flash("Genre invalide.", "error")
+    elif missed:
+        db = get_db()
+        fail_id = insert_fail(db, {
+            "species_id": species_id,
+            "form": variant,
+            "game": hunt["game"],
+            "method": hunt["method"],
+            "location": hunt["location"],
+            "shiny_charm": hunt["shiny_charm"],
+            "gender": gender or None,
+            "encounters": hunt["count"] if hunt["mode"] == "count" else None,
+            "duration": hunt_elapsed(hunt) or None,
+            "reason": request.form.get("reason", "").strip()[:200] or None,
+            "failed_on": date.today().isoformat(),
+        })
+        number = add_pending_phase(db, hunt_id, fail_id=fail_id)
+        db.commit()
+        flash(f"Phase {number} : {display_name(species_id, variant)} ajouté aux shiny manqués 😭", "success")
     elif gender not in GENDERS:
         flash("Choisissez le genre de la phase.", "error")
     elif ball is not None and ball not in BALLS:
