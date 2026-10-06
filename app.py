@@ -1,5 +1,6 @@
 import os
 import re
+import secrets
 import sqlite3
 import time
 from datetime import date
@@ -8,7 +9,7 @@ from functools import wraps
 import click
 from duration import clock, format_duration, parse_duration
 from flask import (
-    Flask, Response, abort, flash, g, redirect, render_template, request, session, url_for,
+    Flask, Response, abort, flash, g, redirect, render_template, request, send_file, session, url_for,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -55,6 +56,10 @@ def close_db(exc):
 
 # Colonnes ajoutées après la création initiale des tables
 MIGRATIONS = {
+    "users": {
+        "stream_token": "TEXT",  # adresse secrète du mode stream (OBS) ; index unique dans init_db
+        "api_token": "TEXT",     # clé des raccourcis globaux (modifie les compteurs) ; index unique
+    },
     "shinies": {
         "encounters": "INTEGER CHECK (encounters >= 0)",
         "ball": "TEXT",
@@ -111,6 +116,8 @@ def init_db():
     if ("shinies", "shiny_charm") in added:
         move_note_fields(db)
     db.execute("CREATE INDEX IF NOT EXISTS idx_shinies_user ON shinies (user_id)")
+    db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_stream_token ON users (stream_token)")
+    db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_api_token ON users (api_token)")
     # Shiny créés avant l'arrivée des comptes multiples : rattachés au plus ancien compte
     db.execute(
         "UPDATE shinies SET user_id = (SELECT MIN(id) FROM users) WHERE user_id IS NULL"
@@ -922,6 +929,33 @@ def shiny_new():
     return render_form(candidates=candidates)
 
 
+@app.route("/shiny/<int:shiny_id>")
+def shiny_detail(shiny_id):
+    """Fiche détaillée d'un shiny (publique, comme la collection)."""
+    db = get_db()
+    row = db.execute("SELECT * FROM shinies WHERE id = ?", (shiny_id,)).fetchone()
+    if row is None:
+        abort(404)
+    owner = db.execute("SELECT * FROM users WHERE id = ?", (row["user_id"],)).fetchone()
+    s = to_view(row)
+    phases = [to_view(r) for r in db.execute(
+        """SELECT s.* FROM hunt_phases p JOIN shinies s ON s.id = p.shiny_id
+           WHERE p.target_id = ? ORDER BY p.position""", (shiny_id,))]
+    attach_phases([s])  # nom de la cible si ce shiny est une phase
+    if (info := phase_of(shiny_id)):
+        s["phase_number"], target = info
+        s["phase_target"], s["phase_target_id"] = target["name"], target["id"]
+    _, odds_note = methods.odds(row["method"], row["game"], bool(row["shiny_charm"]))
+    return render_template(
+        "shiny_detail.html",
+        **collection_context(owner, collection_of(row["game"])),
+        s=s,
+        phases=phases,
+        odds_note=odds_note,
+        luck=stats.luck(row["encounters"], s["odds"]),
+    )
+
+
 @app.route("/shiny/<int:shiny_id>/edit", methods=["GET", "POST"])
 @login_required
 def shiny_edit(shiny_id):
@@ -1076,6 +1110,24 @@ def hunts():
     )
 
 
+@app.route("/compteur/multi")
+@login_required
+def hunts_multi():
+    """Plusieurs chasses côte à côte (?id=1&id=4…), dans l'ordre demandé."""
+    ids = list(dict.fromkeys(request.args.getlist("id", type=int)))
+    rows = {}
+    if ids:
+        rows = {row["id"]: row for row in get_db().execute(
+            f"SELECT * FROM hunts WHERE user_id = ? AND id IN ({','.join('?' * len(ids))})",
+            [g.user["id"], *ids],
+        )}
+    hunts = [hunt_view(rows[i]) for i in ids if i in rows]
+    if not hunts:
+        flash("Cochez au moins une chasse à afficher.", "error")
+        return redirect(url_for("hunts"))
+    return render_template("hunt_multi.html", hunts=hunts)
+
+
 @app.route("/compteur/<int:hunt_id>")
 @login_required
 def hunt_counter(hunt_id):
@@ -1186,6 +1238,190 @@ def hunt_phase(hunt_id):
         flash(f"Phase {position + 1} : {display_name(species_id, variant)} ajouté à la collection ✨",
               "success")
     return redirect(url_for("hunt_counter", hunt_id=hunt_id))
+
+
+# --- Mode stream (OBS) ------------------------------------------------------
+# OBS n'est pas connecté au compte : la page est publique mais à une adresse secrète
+# (/stream/<jeton>), en lecture seule.
+
+STREAM_COLOR_RE = re.compile(r"[0-9a-fA-F]{6}")
+
+
+def user_token(user_id, column, renew=False):
+    """Jeton secret de l'utilisateur (`stream_token` ou `api_token`), créé au premier usage."""
+    assert column in ("stream_token", "api_token")
+    db = get_db()
+    token = db.execute(f"SELECT {column} FROM users WHERE id = ?", (user_id,)).fetchone()[0]
+    if token is None or renew:
+        token = secrets.token_urlsafe(18)
+        db.execute(f"UPDATE users SET {column} = ? WHERE id = ?", (token, user_id))
+        db.commit()
+    return token
+
+
+def stream_token(user_id, renew=False):
+    return user_token(user_id, "stream_token", renew)
+
+
+def stream_owner(token):
+    user = get_db().execute("SELECT id FROM users WHERE stream_token = ?", (token,)).fetchone()
+    if user is None:
+        abort(404)
+    return user
+
+
+@app.route("/compteur/stream")
+@login_required
+def stream_settings():
+    rows = get_db().execute("SELECT * FROM hunts WHERE user_id = ? ORDER BY id DESC", (g.user["id"],))
+    return render_template(
+        "stream_settings.html",
+        hunts=[hunt_view(r) for r in rows],
+        selected=request.args.getlist("id", type=int),
+        overlay_url=url_for("stream_overlay", token=stream_token(g.user["id"]), _external=True),
+    )
+
+
+@app.route("/compteur/stream/regenerer", methods=["POST"])
+@login_required
+def stream_regenerate():
+    stream_token(g.user["id"], renew=True)
+    flash("Nouvelle adresse créée : remplacez-la dans OBS.", "success")
+    return redirect(url_for("stream_settings"))
+
+
+@app.route("/stream/<token>")
+def stream_overlay(token):
+    stream_owner(token)
+    args = request.args
+    flag = lambda key, default: args.get(key, "1" if default else "0") != "0"
+    size = args.get("taille", type=int) or 32
+    color = args.get("couleur", "")
+    opts = {
+        "sprite": flag("sprite", True), "name": flag("name", True), "odds": flag("odds", True),
+        "phase": flag("phase", True), "game": flag("game", False), "vertical": flag("vertical", False),
+        "empty": flag("vide", False),
+        "size": min(max(size, 12), 120),
+        "color": f"#{color}" if STREAM_COLOR_RE.fullmatch(color) else "#ffd84d",
+    }
+    data_url = url_for("stream_data", token=token, id=args.getlist("id", type=int))
+    response = app.make_response(render_template("stream_overlay.html", opts=opts, data_url=data_url))
+    response.headers["X-Robots-Tag"] = "noindex"
+    return response
+
+
+@app.route("/stream/<token>/data")
+def stream_data(token):
+    """Chasses en cours (toutes, ou celles de ?id=…, dans cet ordre) pour la source OBS."""
+    user = stream_owner(token)
+    ids = list(dict.fromkeys(request.args.getlist("id", type=int)))
+    rows = get_db().execute(
+        """SELECT h.*, (SELECT COUNT(*) FROM hunt_pending_phases p WHERE p.hunt_id = h.id) AS phases
+           FROM hunts h WHERE user_id = ? ORDER BY id""",
+        (user["id"],),
+    ).fetchall()
+    if ids:
+        by_id = {r["id"]: r for r in rows}
+        rows = [by_id[i] for i in ids if i in by_id]
+    hunts = []
+    for row in rows:
+        h = hunt_view(row)
+        hunts.append({
+            "id": h["id"], "species": h["species"], "game": h["game_label"], "sprites": h["sprites"],
+            "mode": h["mode"], "count": h["count"], "elapsed": h["elapsed_now"],
+            "running": h["started_at"] is not None, "odds": h["odds"], "phases": row["phases"],
+        })
+    response = app.json.response({"hunts": hunts})
+    response.cache_control.no_store = True
+    return response
+
+
+# --- Raccourcis globaux (tools/krabhunt_raccourcis.py) ------------------------
+# Le programme tourne sur le PC du joueur, hors du navigateur : il s'authentifie avec la clé
+# `api_token`, qui ne permet que de faire avancer les compteurs.
+
+HOTKEY_DEFAULTS = [("num plus", "num minus"), ("page up", "page down"), ("f9", "f10"), ("f11", "f12")]
+
+
+@app.route("/compteur/raccourcis")
+@login_required
+def hotkeys_settings():
+    rows = get_db().execute("SELECT * FROM hunts WHERE user_id = ? ORDER BY id DESC", (g.user["id"],))
+    hunts = [hunt_view(r) for r in rows]
+    defaults = [HOTKEY_DEFAULTS[i] if i < len(HOTKEY_DEFAULTS) else ("", "") for i in range(len(hunts))]
+    return render_template(
+        "hotkeys_settings.html",
+        hunts=hunts,
+        defaults=defaults,
+        site=request.host_url.rstrip("/"),
+        api_key=user_token(g.user["id"], "api_token"),
+    )
+
+
+@app.route("/compteur/raccourcis/regenerer", methods=["POST"])
+@login_required
+def hotkeys_regenerate():
+    user_token(g.user["id"], "api_token", renew=True)
+    flash("Nouvelle clé créée : re-téléchargez le fichier de configuration.", "success")
+    return redirect(url_for("hotkeys_settings"))
+
+
+TOOLS = {"krabhunt_raccourcis.py", "krabhunt_auto.py"}  # programmes à lancer sur le PC (dossier tools/)
+
+
+@app.route("/compteur/outils/<name>")
+@login_required
+def tool_script(name):
+    if name not in TOOLS:
+        abort(404)
+    return send_file(os.path.join(BASE_DIR, "tools", name), mimetype="text/x-python", as_attachment=True)
+
+
+def api_user(token):
+    user = get_db().execute("SELECT id FROM users WHERE api_token = ?", (token,)).fetchone()
+    if user is None:
+        abort(404)
+    return user
+
+
+@app.route("/api/<token>/chasses")
+def api_hunts(token):
+    """Chasses en cours du compte (pour choisir la chasse dans les programmes du dossier tools/)."""
+    user = api_user(token)
+    rows = get_db().execute("SELECT * FROM hunts WHERE user_id = ? ORDER BY id DESC", (user["id"],))
+    return {"chasses": [
+        {"id": h["id"], "species": h["species"], "game": h["game_label"], "method": h["method"],
+         "mode": h["mode"], "count": h["count"]}
+        for h in map(hunt_view, rows)
+    ]}
+
+
+@app.route("/api/<token>/chasse/<int:hunt_id>", methods=["POST"])
+def api_hunt(token, hunt_id):
+    """{"action": "plus" | "moins" | "timer" | "start" | "pause"} -> état de la chasse."""
+    user = api_user(token)
+    db = get_db()
+    hunt = db.execute("SELECT * FROM hunts WHERE id = ? AND user_id = ?", (hunt_id, user["id"])).fetchone()
+    if hunt is None:
+        abort(404)
+    action = (request.get_json(silent=True) or {}).get("action")
+    if action in ("plus", "moins"):
+        sign = 1 if action == "plus" else -1
+        db.execute("UPDATE hunts SET count = MAX(0, count + ?) WHERE id = ?", (sign * hunt["step"], hunt_id))
+    elif action in ("timer", "start", "pause"):
+        running = hunt["started_at"] is not None
+        if action == "timer":
+            action = "pause" if running else "start"
+        if action == "start" and not running:
+            db.execute("UPDATE hunts SET started_at = ? WHERE id = ?", (int(time.time()), hunt_id))
+        elif action == "pause" and running:
+            pause_timer(db, hunt)
+    else:
+        return {"erreur": "action inconnue (plus, moins, timer, start, pause)"}, 400
+    db.commit()
+    h = hunt_view(db.execute("SELECT * FROM hunts WHERE id = ?", (hunt_id,)).fetchone())
+    return {"id": h["id"], "species": h["species"], "mode": h["mode"], "count": h["count"],
+            "elapsed": h["elapsed_now"], "running": h["started_at"] is not None}
 
 
 @app.route("/compteur/<int:hunt_id>/delete", methods=["POST"])

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Mode stream · KRABHUNT{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <h1>Mode stream (OBS)</h1>
+  <a href="{{ url_for('hunts') }}">← Compteur</a>
+</div>
+
+<section class="card form-card stream-settings">
+  <p class="hint">Affiche tes compteurs en direct dans OBS, sur fond transparent. Dans OBS :
+    <strong>Sources → + → Navigateur</strong>, colle l'adresse ci-dessous, et règle la taille
+    (par exemple 800 × 200). Le compteur se met à jour tout seul quand tu cliques sur KRABHUNT.</p>
+
+  <form id="stream-form">
+    <fieldset>
+      <legend>Chasses affichées</legend>
+      <label class="checkbox"><input type="radio" name="which" value="all" checked> Toutes mes chasses en cours (les nouvelles apparaissent automatiquement)</label>
+      <label class="checkbox"><input type="radio" name="which" value="some"> Seulement :</label>
+      <div class="stream-hunts">
+        {% for h in hunts %}
+          <label class="checkbox"><input type="checkbox" name="id" value="{{ h.id }}"
+                 {% if h.id in selected %}checked{% endif %}> {{ h.species }} <span class="muted-small">· {{ h.game_label }}</span></label>
+        {% else %}
+          <p class="hint">Aucune chasse en cours pour l'instant.</p>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Afficher</legend>
+      <label class="checkbox"><input type="checkbox" name="sprite" checked> Sprite</label>
+      <label class="checkbox"><input type="checkbox" name="name" checked> Nom du Pokémon</label>
+      <label class="checkbox"><input type="checkbox" name="odds" checked> Taux et % de chances</label>
+      <label class="checkbox"><input type="checkbox" name="phase" checked> Numéro de phase</label>
+      <label class="checkbox"><input type="checkbox" name="game"> Jeu</label>
+      <label class="checkbox"><input type="checkbox" name="vertical"> Chasses les unes sous les autres</label>
+    </fieldset>
+
+    <div class="row">
+      <div>
+        <label for="size">Taille du texte (px)</label>
+        <input id="size" name="size" type="number" min="12" max="120" value="32">
+      </div>
+      <div>
+        <label for="color">Couleur du compteur</label>
+        <input id="color" name="color" type="color" value="#ffd84d">
+      </div>
+    </div>
+  </form>
+
+  <label for="stream-url">Adresse pour OBS</label>
+  <div class="copy-row">
+    <input id="stream-url" readonly>
+    <button type="button" class="secondary" id="copy">Copier</button>
+  </div>
+  <p class="hint">⚠️ Cette adresse est secrète : quiconque la connaît peut voir tes compteurs
+    (sans pouvoir les modifier). Ne l'affiche pas à l'écran.</p>
+
+  <h2>Aperçu</h2>
+  <iframe id="preview" class="stream-preview" title="Aperçu de la source OBS"></iframe>
+
+  <form method="post" action="{{ url_for('stream_regenerate') }}"
+        onsubmit="return window.confirm('Créer une nouvelle adresse ? L\'ancienne ne fonctionnera plus dans OBS.')">
+    <button type="submit" class="link danger">Changer d'adresse secrète</button>
+  </form>
+</section>
+
+<script>
+  (() => {
+    const base = {{ overlay_url | tojson }};
+    const form = document.getElementById("stream-form");
+    const output = document.getElementById("stream-url");
+    const preview = document.getElementById("preview");
+    // Options cochées par défaut : seules les différences vont dans l'adresse
+    const defaults = { sprite: true, name: true, odds: true, phase: true, game: false, vertical: false };
+
+    function build() {
+      const params = new URLSearchParams();
+      if (form.which.value === "some") {
+        form.querySelectorAll("input[name=id]:checked").forEach(i => params.append("id", i.value));
+      }
+      for (const [key, def] of Object.entries(defaults)) {
+        if (form[key].checked !== def) params.set(key, form[key].checked ? "1" : "0");
+      }
+      if (form.size.value && form.size.value !== "32") params.set("taille", form.size.value);
+      if (form.color.value !== "#ffd84d") params.set("couleur", form.color.value.slice(1));
+      const query = params.toString();
+      return base + (query ? "?" + query : "");
+    }
+
+    let timer;
+    function update() {
+      output.value = build();
+      clearTimeout(timer);
+      timer = setTimeout(() => { preview.src = output.value; }, 300);
+    }
+    form.addEventListener("input", update);
+    form.addEventListener("change", e => {
+      if (e.target.name === "id") form.which.value = "some";
+      update();
+    });
+    document.getElementById("copy").addEventListener("click", async () => {
+      output.select();
+      try { await navigator.clipboard.writeText(output.value); } catch (e) { document.execCommand("copy"); }
+      const btn = document.getElementById("copy");
+      btn.textContent = "Copié ✓";
+      setTimeout(() => { btn.textContent = "Copier"; }, 1500);
+    });
+    if (form.querySelector("input[name=id]:checked")) form.which.value = "some";
+    update();
+  })();
+</script>
+{% endblock %}

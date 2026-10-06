@@ -2,6 +2,8 @@ CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     username      TEXT    NOT NULL UNIQUE,
     password_hash TEXT    NOT NULL,
+    stream_token  TEXT,                           -- adresse secrète du mode stream (OBS)
+    api_token     TEXT,                           -- clé des raccourcis globaux (tools/krabhunt_raccourcis.py)
     created_at    TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

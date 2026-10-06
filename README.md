@@ -170,6 +170,37 @@ Calculs dans `stats.py`.
 
 Abandonner une chasse la supprime ; les phases déjà trouvées restent dans la collection.
 
+**Mode stream (OBS)** (`/compteur/stream`) : une adresse secrète `/stream/<jeton>` à ajouter dans
+OBS comme source « Navigateur » : compteurs en direct sur fond transparent (mise à jour toutes les
+1,5 s), toutes les chasses ou une sélection, sprite / nom / taux / phase / jeu au choix, taille et
+couleur réglables, avec aperçu. L'adresse est en lecture seule ; « Changer d'adresse secrète »
+invalide l'ancienne.
+
+**Fiche détaillée** (`/shiny/<id>`, publique) : clic sur un shiny de la collection ou un record
+des statistiques. Grand sprite, toutes les infos, taux de la méthode, chance de la chasse
+(rencontres ÷ taux, et part des chasseurs qui auraient mis plus longtemps), phases cliquables,
+bouton « Copier le lien » ; Modifier / Supprimer pour le propriétaire.
+
+**Raccourcis globaux** (`/compteur/raccourcis`) : compter avec une touche même quand le jeu ou
+l'émulateur est au premier plan. Le petit programme `tools/krabhunt_raccourcis.py` (à lancer sur le
+PC, après `pip install keyboard`) écoute le clavier et appelle l'API `POST /api/<clé>/chasse/<id>`
+(`{"action": "plus" | "moins" | "timer"}`). La page choisit les touches par chasse et génère le
+fichier `krabhunt_raccourcis.json` (adresse du site + clé). La clé ne sert qu'aux compteurs et
+peut être changée à tout moment.
+
+**Compteur automatique** (`tools/krabhunt_auto.py`, après `pip install mss opencv-python`) : pour
+les resets (HGSS…). `calibrer <profil>` : on encadre une zone qui n'apparaît qu'à la rencontre (cadre
+nom + PV de l'adversaire) sur l'écran du jeu, on choisit la chasse et on règle le seuil de
+ressemblance en direct. `lancer <profil>` : la zone est comparée ~10 fois par seconde à la référence ;
+au-dessus du seuil, +1 via l'API, puis le compteur attend que la zone disparaisse avant de se réarmer
+(une rencontre = un comptage). `--essai` détecte sans envoyer, `--apercu` affiche la zone surveillée.
+Profils et captures des détections dans `tools/profils/`.
+
+**Multi-compteur** (`/compteur/multi`) : cocher plusieurs chasses dans la liste puis « Ouvrir
+dans le multi-compteur » les affiche côte à côte. Touches `1` à `9` : ajouter au compteur
+correspondant (`Maj` + chiffre pour retirer ; démarre / met en pause un timer) ; `Espace` :
+ajouter à tous les compteurs de rencontres. L'adresse (`?id=…`) peut être mise en favori.
+
 ## Commandes utiles
 
 ```powershell

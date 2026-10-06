@@ -107,8 +107,10 @@
 <div class="grid">
   {% for s in shinies %}
   <article class="shiny">
-    <img data-sprites='{{ s.sprites | tojson }}' alt="{{ s.species }} shiny" loading="lazy">
-    <h2>{{ s.nickname or s.species }}</h2>
+    <a class="shiny-link" href="{{ url_for('shiny_detail', shiny_id=s.id) }}">
+      <img data-sprites='{{ s.sprites | tojson }}' alt="{{ s.species }} shiny" loading="lazy">
+      <h2>{{ s.nickname or s.species }}</h2>
+    </a>
     {% if s.nickname %}<p class="species">{{ s.species }}</p>{% endif %}
     <p class="dex">#{{ '%04d' % s.species_id }} <span class="gender g-{{ s.gender }}" title="{{ s.gender_label }}">{{ s.gender_label[0] }}</span></p>
     {% if s.phase_number %}

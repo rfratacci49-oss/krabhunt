@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Multi-compteur · KRABHUNT{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <h1>Multi-compteur <span class="count">{{ hunts | length }}</span></h1>
+  <span class="toolbar-links">
+    <a href="{{ url_for('stream_settings', id=hunts | map(attribute='id') | list) }}">📺 Afficher dans OBS</a>
+    <a href="{{ url_for('hunts') }}">← Toutes les chasses</a>
+  </span>
+</div>
+<p class="hint">Raccourcis : <kbd>1</kbd> à <kbd>9</kbd> pour le compteur correspondant
+  (<kbd>Maj</kbd> + chiffre pour retirer ; démarre / met en pause un timer),
+  <kbd>Espace</kbd> pour ajouter à tous les compteurs de rencontres.</p>
+
+<div class="multi-grid">
+  {% for h in hunts %}
+  <section class="multi-card" data-id="{{ h.id }}" data-mode="{{ h.mode }}"
+           data-count="{{ h.count }}" data-step="{{ h.step }}" data-odds="{{ h.odds or 0 }}"
+           data-elapsed="{{ h.elapsed_now }}" data-running="{{ 1 if h.started_at else 0 }}"
+           data-count-url="{{ url_for('hunt_count', hunt_id=h.id) }}"
+           data-timer-url="{{ url_for('hunt_timer', hunt_id=h.id) }}">
+    <span class="multi-key" title="Raccourci clavier">{% if loop.index <= 9 %}{{ loop.index }}{% endif %}</span>
+    <img class="multi-sprite" data-sprites='{{ h.sprites | tojson }}' alt="{{ h.species }} shiny">
+    <h2><a href="{{ url_for('hunt_counter', hunt_id=h.id) }}">{{ h.species }}</a></h2>
+    <p class="muted-small">{{ h.game_label }} · {{ h.method }}{% if h.odds and h.odds > 1 %} · 1/{{ h.odds | nombre }}{% endif %}</p>
+
+    <output class="multi-value" aria-live="polite">{{ h.elapsed_now | chrono if h.mode == "timer" else h.count }}</output>
+    <p class="muted-small multi-proba"></p>
+
+    <div class="multi-buttons">
+      {% if h.mode == "timer" %}
+        <button type="button" class="plus toggle">{{ 'Pause' if h.started_at else 'Démarrer' }}</button>
+      {% else %}
+        <button type="button" class="minus" aria-label="Retirer">−</button>
+        <button type="button" class="plus">+{{ h.step }}</button>
+      {% endif %}
+    </div>
+    <a class="multi-found" href="{{ url_for('shiny_new', chasse=h.id) }}">🎉 Trouvé !</a>
+  </section>
+  {% endfor %}
+</div>
+
+<script>
+  (() => {
+    const fmt = n => n.toLocaleString("fr-FR");
+    const clock = s => `${Math.floor(s / 3600)}:${String(Math.floor(s % 3600 / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+    async function post(url, payload) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(res.status);
+      return res.json();
+    }
+
+    // Un objet par carte : add(±1) pour un compteur de rencontres, toggle() pour un timer
+    const cards = [...document.querySelectorAll(".multi-card")].map(card => {
+      const out = card.querySelector(".multi-value");
+      const proba = card.querySelector(".multi-proba");
+      const odds = Number(card.dataset.odds);
+      const flash = () => { out.classList.add("error"); setTimeout(() => out.classList.remove("error"), 800); };
+
+      if (card.dataset.mode === "timer") {
+        const toggleBtn = card.querySelector(".toggle");
+        let base = Number(card.dataset.elapsed), running = card.dataset.running === "1", since = performance.now();
+        const elapsed = () => base + (running ? Math.floor((performance.now() - since) / 1000) : 0);
+        const render = () => {
+          out.textContent = clock(elapsed());
+          toggleBtn.textContent = running ? "Pause" : "Démarrer";
+          toggleBtn.classList.toggle("paused", !running);
+        };
+        const toggle = () => {
+          base = elapsed(); running = !running; since = performance.now(); render();
+          post(card.dataset.timerUrl, { action: running ? "start" : "pause" })
+            .then(d => { base = d.elapsed; running = d.running; since = performance.now(); render(); })
+            .catch(flash);
+        };
+        toggleBtn.addEventListener("click", toggle);
+        render();
+        setInterval(render, 1000);
+        return { card, mode: "timer", toggle };
+      }
+
+      let count = Number(card.dataset.count), pending = 0;
+      const step = Number(card.dataset.step);
+      const render = () => {
+        out.textContent = fmt(count);
+        if (odds > 1) {
+          const p = 1 - Math.pow(1 - 1 / odds, count);
+          proba.textContent = `${(100 * p).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % de chances`;
+        }
+      };
+      const add = sign => {
+        count = Math.max(0, count + sign * step);
+        render();
+        out.classList.remove("bump"); void out.offsetWidth; out.classList.add("bump");
+        pending++;
+        post(card.dataset.countUrl, { delta: sign * step })
+          .then(d => { if (--pending === 0) { count = d.count; render(); } })
+          .catch(() => { pending--; flash(); });
+      };
+      card.querySelector(".plus").addEventListener("click", () => add(1));
+      card.querySelector(".minus").addEventListener("click", () => add(-1));
+      render();
+      return { card, mode: "count", add };
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.target.closest("input, textarea, select, summary, button") || e.ctrlKey || e.altKey || e.metaKey) return;
+      if (e.key === " ") {
+        e.preventDefault();
+        cards.filter(c => c.mode === "count").forEach(c => c.add(1));
+        return;
+      }
+      // Chiffre de la rangée du haut ou du pavé numérique, quelle que soit la disposition du clavier
+      const match = e.code.match(/^(?:Digit|Numpad)([1-9])$/);
+      const c = match && cards[Number(match[1]) - 1];
+      if (!c) return;
+      e.preventDefault();
+      if (c.mode === "timer") c.toggle();
+      else c.add(e.shiftKey ? -1 : 1);
+    });
+  })();
+</script>
+{% endblock %}

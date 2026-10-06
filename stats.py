@@ -77,6 +77,30 @@ def _histogram(values, buckets):
     return rows
 
 
+def luck(encounters, odds):
+    """Chance d'une chasse terminée en `encounters` rencontres au taux 1/`odds`, ou None.
+
+    found = probabilité d'avoir trouvé en au plus autant de rencontres ;
+    better = part des chasseurs qui en auraient eu besoin de plus.
+    """
+    if not encounters or not odds or odds <= 1:
+        return None
+    found = 1 - (1 - 1 / odds) ** encounters
+    ratio = encounters / odds
+    level, emoji, label = next(
+        (lvl, e, lab) for limit, lvl, e, lab in [
+            (0.25, "top", "🍀", "Coup de chance incroyable !"),
+            (0.7, "good", "🍀", "Chanceux"),
+            (1.5, "mid", "🙂", "Dans la moyenne"),
+            (3, "bad", "😅", "Pas de chance"),
+            (float("inf"), "awful", "😭", "Grosse malchance"),
+        ] if ratio < limit
+    )
+    pct = lambda x: f"{100 * x:.1f}".replace(".", ",").removesuffix(",0")
+    return {"level": level, "emoji": emoji, "label": label,
+            "ratio": f"{ratio:.2f}".replace(".", ","), "found": pct(found), "better": pct(1 - found)}
+
+
 def compute(shinies):
     total = len(shinies)
     with_enc = [s for s in shinies if s["encounters"] is not None]

@@ -188,14 +188,14 @@
     <h2>Records</h2>
     <div class="record-grid">
       {% for title, shiny, detail in s.records %}
-        <div class="record">
+        <a class="record" href="{{ url_for('shiny_detail', shiny_id=shiny.id) }}">
           <img data-sprites='{{ shiny.sprites | tojson }}' alt="" loading="lazy">
           <div>
             <span class="kpi-label">{{ title }}</span>
             <strong>{{ shiny.name }}</strong>
             <span class="muted-small">{{ detail }} · {{ shiny.game_label }}</span>
           </div>
-        </div>
+        </a>
       {% endfor %}
     </div>
   </section>

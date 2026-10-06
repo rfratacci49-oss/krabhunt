@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Raccourcis globaux · KRABHUNT{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <h1>Raccourcis globaux</h1>
+  <a href="{{ url_for('hunts') }}">← Compteur</a>
+</div>
+
+<section class="card form-card stream-settings">
+  <p class="hint">Compte avec une touche du clavier <strong>même quand le jeu ou l'émulateur est au
+    premier plan</strong>. Un navigateur ne peut pas écouter le clavier quand il n'est pas au premier plan :
+    il faut un petit programme Python sur ton PC, qui envoie chaque appui au site.
+    Le compteur se met à jour partout : page de la chasse, multi-compteur, OBS.</p>
+
+  <h2>1. Choisir les touches</h2>
+  {% if hunts %}
+  <form id="hotkeys-form">
+    <table class="hotkeys-table">
+      <thead><tr><th>Chasse</th><th>Ajouter</th><th>Retirer</th></tr></thead>
+      <tbody>
+        {% for h in hunts %}
+        <tr data-id="{{ h.id }}" data-mode="{{ h.mode }}">
+          <td><strong>{{ h.species }}</strong> <span class="muted-small">· {{ h.game_label }}{{ ' · timer' if h.mode == 'timer' }}</span></td>
+          <td><input name="plus" placeholder="{{ 'démarrer / pause' if h.mode == 'timer' else 'ex. ' ~ defaults[loop.index0][0] }}"
+                     value="{{ defaults[loop.index0][0] if loop.first }}" aria-label="Touche pour ajouter ({{ h.species }})"></td>
+          <td>{% if h.mode != "timer" %}<input name="minus" placeholder="ex. {{ defaults[loop.index0][1] }}"
+                     value="{{ defaults[loop.index0][1] if loop.first }}" aria-label="Touche pour retirer ({{ h.species }})">{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <label class="checkbox"><input type="checkbox" name="son"> Petit bip à chaque appui (Windows)</label>
+  </form>
+  <p class="hint">Touches possibles : <code>f9</code>, <code>page up</code>, <code>num plus</code> (+ du pavé numérique),
+    <code>ctrl+alt+up</code>… Laisse vide pour ne pas créer de raccourci. Choisis des touches que le jeu n'utilise pas :
+    elles continuent d'arriver au jeu.</p>
+
+  <h2>2. Installer et lancer</h2>
+  <ol class="hotkeys-steps">
+    <li>Télécharge <a href="{{ url_for('tool_script', name='krabhunt_raccourcis.py') }}" download>krabhunt_raccourcis.py</a>
+      et <a href="#" id="download-config">krabhunt_raccourcis.json</a> dans le même dossier.</li>
+    <li>Une seule fois, installe le module clavier : <code>pip install keyboard</code></li>
+    <li>Lance : <code>python krabhunt_raccourcis.py</code> et laisse la fenêtre ouverte pendant la chasse.</li>
+  </ol>
+  <p class="hint">Pour changer de touches ou de chasse, re-télécharge le fichier <code>.json</code> et relance le programme.</p>
+  {% else %}
+  <p class="hint">Lance d'abord une chasse dans le compteur.</p>
+  {% endif %}
+
+  <h2>Compteur automatique (resets)</h2>
+  <p class="hint">Le programme <a href="{{ url_for('tool_script', name='krabhunt_auto.py') }}" download>krabhunt_auto.py</a>
+    regarde une zone de l'écran (émulateur, ou aperçu OBS d'une carte d'acquisition) et compte +1 chaque fois
+    que l'écran de rencontre réapparaît : pratique pour les resets (HGSS…). Il utilise le même fichier
+    <code>krabhunt_raccourcis.json</code> (adresse du site et clé), à placer dans le même dossier.</p>
+  <ol class="hotkeys-steps">
+    <li>Une seule fois : <code>pip install mss opencv-python</code></li>
+    <li>Calibrer : <code>python krabhunt_auto.py calibrer ho-oh</code> — mettre le jeu sur l'écran de combat,
+      encadrer le cadre nom + PV de l'adversaire, choisir la chasse, régler le seuil pendant un reset d'essai.</li>
+    <li>Vérifier sans rien envoyer : <code>python krabhunt_auto.py lancer ho-oh --essai</code></li>
+    <li>Compter pour de vrai : <code>python krabhunt_auto.py lancer ho-oh</code> (<kbd>F8</kbd> pause si le module
+      <code>keyboard</code> est installé).</li>
+  </ol>
+  <p class="hint">La fenêtre du jeu ne doit pas bouger ni être recouverte une fois le profil calibré.
+    Les captures des 50 dernières détections sont gardées pour vérifier qu'il n'y a pas de faux comptage.</p>
+
+  <h2>Clé d'accès</h2>
+  <p class="hint">Le fichier <code>.json</code> contient une clé qui permet de <strong>modifier</strong> tes compteurs
+    (rien d'autre). Ne la partage pas. Si elle fuit, change-la : l'ancien fichier ne marchera plus.</p>
+  <form method="post" action="{{ url_for('hotkeys_regenerate') }}"
+        onsubmit="return window.confirm('Créer une nouvelle clé ? Il faudra re-télécharger le fichier de configuration.')">
+    <button type="submit" class="link danger">Changer de clé</button>
+  </form>
+</section>
+
+<script>
+  (() => {
+    const link = document.getElementById("download-config");
+    if (!link) return;
+    const form = document.getElementById("hotkeys-form");
+    const site = {{ site | tojson }}, key = {{ api_key | tojson }};
+
+    function config() {
+      const shortcuts = [];
+      form.querySelectorAll("tr[data-id]").forEach(row => {
+        const id = Number(row.dataset.id), timer = row.dataset.mode === "timer";
+        const plus = row.querySelector("[name=plus]").value.trim();
+        const minus = row.querySelector("[name=minus]")?.value.trim();
+        if (plus) shortcuts.push({ touche: plus, chasse: id, action: timer ? "timer" : "+" });
+        if (minus) shortcuts.push({ touche: minus, chasse: id, action: "-" });
+      });
+      return { site, cle: key, son: form.son.checked, raccourcis: shortcuts };
+    }
+
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const cfg = config();
+      if (!cfg.raccourcis.length) { window.alert("Choisis au moins une touche."); return; }
+      const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "krabhunt_raccourcis.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  })();
+</script>
+{% endblock %}

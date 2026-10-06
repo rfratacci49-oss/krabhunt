@@ -2,7 +2,8 @@
 {% from "_macros.html" import form_picker with context %}
 {% block title %}{{ hunt.species }} · Compteur · KRABHUNT{% endblock %}
 {% block content %}
-<p class="back"><a href="{{ url_for('hunts') }}">← Toutes les chasses</a></p>
+<p class="back"><a href="{{ url_for('hunts') }}">← Toutes les chasses</a>
+  · <a href="{{ url_for('stream_settings', id=hunt.id) }}">📺 Afficher dans OBS</a></p>
 
 <section class="counter">
   <img class="counter-sprite" data-sprites='{{ hunt.sprites | tojson }}' alt="{{ hunt.species }} shiny">

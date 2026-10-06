@@ -2,3 +2,7 @@
 __pycache__/
 *.db
 .env
+
+# Programmes du dossier tools/ : clé personnelle et profils de détection
+tools/krabhunt_raccourcis.json
+tools/profils/

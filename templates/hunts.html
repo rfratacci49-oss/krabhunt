@@ -4,11 +4,22 @@
 {% block content %}
 <div class="toolbar">
   <h1>Compteur</h1>
+  <span class="toolbar-links">
+    <a href="{{ url_for('hotkeys_settings') }}">⌨ Raccourcis globaux</a>
+    <a href="{{ url_for('stream_settings') }}">📺 Mode stream (OBS)</a>
+  </span>
 </div>
 
 {% if hunts %}
+<form method="get" action="{{ url_for('hunts_multi') }}" id="multi-form">
 <div class="hunt-list">
   {% for h in hunts %}
+  <div class="hunt-row">
+  {% if hunts | length > 1 %}
+  <label class="hunt-pick" title="Afficher dans le multi-compteur">
+    <input type="checkbox" name="id" value="{{ h.id }}" aria-label="Multi-compteur : {{ h.species }}">
+  </label>
+  {% endif %}
   <a class="hunt-card" href="{{ url_for('hunt_counter', hunt_id=h.id) }}">
     <img data-sprites='{{ h.sprites | tojson }}' alt="{{ h.species }} shiny" loading="lazy">
     <div>
@@ -22,8 +33,29 @@
     <span class="hunt-count">{{ '{:,}'.format(h.count).replace(',', ' ') }}</span>
     {% endif %}
   </a>
+  </div>
   {% endfor %}
 </div>
+{% if hunts | length > 1 %}
+<button type="submit" class="secondary multi-open" id="multi-open" disabled>
+  Ouvrir les chasses cochées dans le multi-compteur
+</button>
+<script>
+  (() => {
+    const form = document.getElementById("multi-form");
+    const button = document.getElementById("multi-open");
+    const update = () => {
+      const n = form.querySelectorAll("input[name=id]:checked").length;
+      button.disabled = n === 0;
+      button.textContent = n ? `Ouvrir ${n} chasse${n > 1 ? "s" : ""} dans le multi-compteur`
+                             : "Cochez des chasses pour le multi-compteur";
+    };
+    form.addEventListener("change", update);
+    update();
+  })();
+</script>
+{% endif %}
+</form>
 {% else %}
 <p class="empty">Aucune chasse en cours.</p>
 {% endif %}

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>KRABHUNT · stream</title>
+  <style>
+    /* Source navigateur OBS : fond transparent, texte lisible sur n'importe quelle vidéo */
+    :root { --color: {{ opts.color }}; --size: {{ opts.size }}px; }
+    html, body { margin: 0; background: transparent; overflow: hidden; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: #fff; font-size: var(--size);
+      text-shadow: 0 0 4px #000, 0 2px 3px #000, 0 0 1px #000;
+    }
+    #hunts { display: flex; flex-wrap: wrap; gap: 0.6em 1.4em; padding: 0.4em; }
+    #hunts.vertical { flex-direction: column; }
+    .hunt { display: flex; align-items: center; gap: 0.5em; }
+    .hunt img { width: 3.2em; height: 3.2em; object-fit: contain; image-rendering: pixelated;
+                filter: drop-shadow(0 0 3px #000); }
+    .info { display: flex; flex-direction: column; line-height: 1.1; }
+    .name { font-weight: 700; font-size: 0.75em; }
+    .value { font-weight: 800; font-size: 1.6em; color: var(--color); font-variant-numeric: tabular-nums; }
+    .value.bump { animation: bump 0.2s ease-out; }
+    .extra { font-size: 0.6em; opacity: 0.9; }
+    @keyframes bump { 50% { transform: scale(1.12); } }
+    .empty { font-size: 0.7em; padding: 0.4em; }
+  </style>
+</head>
+<body>
+  <div id="hunts" class="{{ 'vertical' if opts.vertical }}"></div>
+
+  <script>
+    (() => {
+      const url = {{ data_url | tojson }};
+      const opts = {{ opts | tojson }};
+      const box = document.getElementById("hunts");
+      const fmt = n => n.toLocaleString("fr-FR");
+      const clock = s => `${Math.floor(s / 3600)}:${String(Math.floor(s % 3600 / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+      let hunts = [], fetchedAt = performance.now();
+      const shown = new Map();  // id -> élément affiché
+
+      function sprite(img, urls) {
+        let i = 0;
+        img.onerror = () => { if (++i < urls.length) img.src = urls[i]; else img.onerror = null; };
+        img.src = urls[0];
+      }
+
+      function value(h) {
+        if (h.mode === "timer") {
+          const extra = h.running ? Math.floor((performance.now() - fetchedAt) / 1000) : 0;
+          return clock(h.elapsed + extra);
+        }
+        return fmt(h.count);
+      }
+
+      function extra(h) {
+        const parts = [];
+        if (opts.phase && h.phases) parts.push(`Phase ${h.phases + 1}`);
+        if (opts.odds && h.odds > 1) {
+          parts.push(`1/${fmt(h.odds)}`);
+          if (h.mode === "count") {
+            const p = 1 - Math.pow(1 - 1 / h.odds, h.count);
+            parts.push(`${(100 * p).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`);
+          }
+        }
+        if (opts.game) parts.push(h.game);
+        return parts.join(" · ");
+      }
+
+      function render() {
+        if (!hunts.length) {
+          box.innerHTML = opts.empty ? '<div class="empty">Aucune chasse en cours</div>' : "";
+          shown.clear();
+          return;
+        }
+        const ids = new Set(hunts.map(h => h.id));
+        for (const [id, el] of shown) if (!ids.has(id)) { el.remove(); shown.delete(id); }
+        hunts.forEach(h => {
+          let el = shown.get(h.id);
+          if (!el) {
+            el = document.createElement("div");
+            el.className = "hunt";
+            el.innerHTML = `${opts.sprite ? "<img alt=''>" : ""}<div class="info">`
+              + `${opts.name ? '<span class="name"></span>' : ""}<span class="value"></span><span class="extra"></span></div>`;
+            if (opts.sprite) sprite(el.querySelector("img"), h.sprites);
+            shown.set(h.id, el);
+          }
+          box.appendChild(el);  // garde l'ordre des chasses
+          if (opts.name) el.querySelector(".name").textContent = h.species;
+          const v = el.querySelector(".value"), text = value(h);
+          if (v.textContent !== text && h.mode === "count" && v.textContent) {
+            v.classList.remove("bump"); void v.offsetWidth; v.classList.add("bump");
+          }
+          v.textContent = text;
+          el.querySelector(".extra").textContent = extra(h);
+        });
+      }
+
+      async function refresh() {
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          if (res.ok) { hunts = (await res.json()).hunts; fetchedAt = performance.now(); render(); }
+        } catch (e) { /* réseau coupé : on garde le dernier affichage */ }
+      }
+
+      refresh();
+      setInterval(refresh, 1500);
+      setInterval(render, 1000);  // fait avancer les timers entre deux mises à jour
+    })();
+  </script>
+</body>
+</html>
