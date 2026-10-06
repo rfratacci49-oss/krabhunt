@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>✨ Les collections shiny</h1>
+  <p>Chaque chasseur expose ses Pokémon chromatiques : jeu, méthode, Ball, nombre de rencontres…</p>
+  {% if not g.user %}
+    <a href="{{ url_for('register') }}" class="btn">Créer ma collection</a>
+  {% endif %}
+</section>
+
+{% if hunters %}
+<div class="hunters">
+  {% for h in hunters %}
+  <a class="hunter" href="{{ url_for('collection', username=h.username) }}">
+    <div class="hunter-head">
+      <strong>{{ h.username }}</strong>
+      <span class="count">{{ h.total }}</span>
+    </div>
+    {% if h.others %}
+    <div class="hunter-others">
+      {% for key, label, n in h.others %}<span>{{ label }} · {{ n }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="preview">
+      {% for s in h.preview %}
+        <img data-sprites='{{ s.sprites | tojson }}' alt="{{ s.species }}" title="{{ s.nickname or s.species }}" loading="lazy">
+      {% else %}
+        <span class="muted-small">Aucun shiny pour l'instant</span>
+      {% endfor %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">Aucun chasseur inscrit pour l'instant.</p>
+{% endif %}
+{% endblock %}

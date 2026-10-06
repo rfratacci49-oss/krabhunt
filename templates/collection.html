@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% from "_macros.html" import collection_tabs with context %}
+{% block title %}{{ coll_label ~ ' · ' if coll != 'principale' }}Collection de {{ owner.username }} · KRABHUNT{% endblock %}
+{% block content %}
+{% macro choice(name, label, items, all_label) %}
+  <label class="filter-field">
+    <span>{{ label }}</span>
+    <select name="{{ name }}">
+      <option value="">{{ all_label }}</option>
+      {% for item in items %}
+        {% set value, text, n = (item if item | length == 3 else (item[0], item[0], item[1])) %}
+        <option value="{{ value }}" {% if value | string == f[name] | string %}selected{% endif %}>{{ text }} ({{ n }})</option>
+      {% endfor %}
+    </select>
+  </label>
+{% endmacro %}
+
+{{ collection_tabs('collection') }}
+<div class="toolbar">
+  <h1>{{ "Ma collection" if is_owner else "Collection de " ~ owner.username }}{% if coll != 'principale' %} {{ coll_label }}{% endif %} <span class="count">{{ total }}</span></h1>
+  {% if total or is_owner %}
+  <span class="toolbar-links">
+    {% if total %}
+    <a href="{{ url_for('collection_shinydex', username=owner.username, collection=coll) }}">✨ Shinydex</a>
+    <a href="{{ url_for('collection_stats', username=owner.username, collection=coll) }}">📊 Statistiques</a>
+    <a href="{{ url_for('collection_export', username=owner.username, collection=coll, **request.args.to_dict()) }}"
+       title="{{ 'Exporte les ' ~ shown ~ ' shiny affichés' if active else 'Exporte toute la collection' }}">
+      ⬇ Exporter en CSV{% if active %} ({{ shown }}){% endif %}
+    </a>
+    <a href="{{ url_for('collection_export_tracker', username=owner.username, collection=coll, **request.args.to_dict()) }}"
+       title="CSV au format du tracker de shiny (sections Shiny obtenus / Shasses en cours)">⬇ Format tracker</a>
+    {% endif %}
+    {% if is_owner %}<a href="{{ url_for('collection_import') }}">⬆ Importer</a>{% endif %}
+  </span>
+  {% endif %}
+</div>
+
+{% if total %}
+<form method="get" class="filters" id="filters">
+  <div class="filters-main">
+    <input type="search" name="q" value="{{ f.q }}" placeholder="Rechercher : nom, surnom, n°, lieu, note…"
+           aria-label="Rechercher" list="collection-species" autocomplete="off">
+    <datalist id="collection-species">
+      {% for name in options.especes %}<option value="{{ name }}">{% endfor %}
+    </datalist>
+    {{ choice("jeu", "Jeu", options.jeu, "Tous les jeux") }}
+    <label class="filter-field">
+      <span>Ranger</span>
+      <select name="groupe">
+        {% for key, label in groupings.items() %}
+          <option value="{{ key }}" {% if key == f.groupe %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="filter-field">
+      <span>Tri</span>
+      <select name="tri">
+        {% for key, label in sorts.items() if f.groupe != "date" or key.startswith("date_") %}
+          <option value="{{ key }}" {% if key == f.tri %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit" class="secondary">Filtrer</button>
+  </div>
+
+  <details class="filters-more" {% if active > (1 if f.q else 0) + (1 if f.jeu else 0) %}open{% endif %}>
+    <summary>Plus de filtres</summary>
+    <div class="filters-grid">
+      {{ choice("gen", "Génération", options.gen, "Toutes") }}
+      {{ choice("methode", "Méthode", options.methode, "Toutes") }}
+      {{ choice("ball", "Poké Ball", options.ball, "Toutes") }}
+      {{ choice("charme", "Charme chroma", options.charme, "Tous") }}
+      {{ choice("genre", "Genre", options.genre, "Tous") }}
+      {{ choice("phase", "Phases", options.phase, "Tous") }}
+      {{ choice("forme", "Forme", options.forme, "Toutes") }}
+      {{ choice("annee", "Année", options.annee, "Toutes") }}
+      <label class="filter-field">
+        <span>Rencontres</span>
+        <span class="range">
+          <input type="number" name="min" min="0" placeholder="min" value="{{ f.min if f.min is not none }}" aria-label="Rencontres minimum">
+          <input type="number" name="max" min="0" placeholder="max" value="{{ f.max if f.max is not none }}" aria-label="Rencontres maximum">
+        </span>
+      </label>
+    </div>
+  </details>
+
+  <p class="filters-summary">
+    {% if active %}
+      <strong>{{ shown }}</strong> shiny sur {{ total }} · {{ active }} filtre{{ 's' if active > 1 }} actif{{ 's' if active > 1 }}
+      · <a href="{{ url_for('collection', username=owner.username, collection=coll) }}">Réinitialiser</a>
+    {% else %}
+      {{ total }} shiny
+    {% endif %}
+  </p>
+</form>
+<script>
+  // Les listes et cases s'appliquent dès qu'on les change ; la recherche à la validation
+  document.getElementById("filters").addEventListener("change", e => {
+    if (e.target.matches("select")) e.target.form.requestSubmit();
+  });
+</script>
+{% endif %}
+
+{% for family_label, shinies in sections %}
+<section class="family">
+{% if family_label %}<h2 class="family-title">{{ family_label }} <span class="count">{{ shinies | length }}</span></h2>{% endif %}
+<div class="grid">
+  {% for s in shinies %}
+  <article class="shiny">
+    <img data-sprites='{{ s.sprites | tojson }}' alt="{{ s.species }} shiny" loading="lazy">
+    <h2>{{ s.nickname or s.species }}</h2>
+    {% if s.nickname %}<p class="species">{{ s.species }}</p>{% endif %}
+    <p class="dex">#{{ '%04d' % s.species_id }} <span class="gender g-{{ s.gender }}" title="{{ s.gender_label }}">{{ s.gender_label[0] }}</span></p>
+    {% if s.phase_number %}
+      <p class="phase-badge">Phase {{ s.phase_number }} <span>· chasse de {{ s.phase_target }}</span></p>
+    {% elif s.phases %}
+      <p class="phase-badge final" title="Phases : {{ s.phases | join(', ') }}">
+        Phase finale <span>· après {{ s.phases | length }} phase{{ 's' if s.phases | length > 1 }}</span>
+      </p>
+    {% endif %}
+    <dl>
+      <dt>Jeu</dt><dd>{{ s.game_label }}</dd>
+      <dt>Méthode</dt><dd>{{ s.method }}{% if s.odds and s.odds > 1 %} <span class="odds" title="Taux shiny{{ ' avec charme chroma' if s.shiny_charm }}">1/{{ s.odds | nombre }}</span>{% endif %}</dd>
+      {% if s.location %}<dt>Lieu</dt><dd>{{ s.location }}</dd>{% endif %}
+      {% if s.shiny_charm %}<dt>Charme</dt><dd>✨ Charme chroma</dd>{% endif %}
+      {% if s.ball_label %}
+        <dt>Ball</dt>
+        <dd class="ball">
+          {% if s.ball_icon %}<img src="{{ s.ball_icon }}" alt="" width="24" height="24">{% endif %}
+          {{ s.ball_label }}
+        </dd>
+      {% endif %}
+      {% if s.encounters is not none %}<dt>Rencontres</dt><dd>{{ '{:,}'.format(s.encounters).replace(',', ' ') }}</dd>{% endif %}
+      {% if s.duration is not none %}<dt>Temps</dt><dd>⏱ {{ s.duration | duree }}</dd>{% endif %}
+      {% if s.caught_on %}<dt>Date</dt><dd>{{ s.caught_on | date_fr }}</dd>{% endif %}
+    </dl>
+    {% if s.notes %}<p class="notes">{{ s.notes }}</p>{% endif %}
+    {% if is_owner %}
+    <div class="actions">
+      <a href="{{ url_for('shiny_edit', shiny_id=s.id) }}">Modifier</a>
+      <form action="{{ url_for('shiny_delete', shiny_id=s.id) }}" method="post"
+            onsubmit="return window.confirm('Supprimer ce shiny ?')">
+        <button type="submit" class="link danger">Supprimer</button>
+      </form>
+    </div>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+</section>
+{% else %}
+<p class="empty">
+  {% if total %}
+    Aucun shiny ne correspond à ces filtres.
+    <a href="{{ url_for('collection', username=owner.username, collection=coll) }}">Réinitialiser</a>
+  {% else %}
+    Aucun shiny pour l'instant.
+    {% if is_owner %}<a href="{{ url_for('shiny_new') }}">Ajouter le premier ✨</a>{% endif %}
+  {% endif %}
+</p>
+{% endfor %}
+{% endblock %}

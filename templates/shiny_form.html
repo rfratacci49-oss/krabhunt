@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% from "_macros.html" import form_picker with context %}
+{% block title %}{{ 'Modifier' if shiny else 'Ajouter' }} un shiny · KRABHUNT{% endblock %}
+{% macro phase_row(selected=None) %}
+<div class="phase-row">
+  <select name="phase_shiny" aria-label="Shiny trouvé en phase">
+    <option value="">Choisir un shiny de la collection…</option>
+    {% for id, label in candidates.items() %}
+      <option value="{{ id }}" {% if id == selected %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button type="button" class="link danger remove-phase" aria-label="Retirer cette phase">✕</button>
+</div>
+{% endmacro %}
+
+{% block content %}
+<section class="card form-card">
+  <h1>{{ 'Modifier' if shiny else 'Ajouter' }} un shiny</h1>
+  {% if hunt %}
+    <p class="hint">🎉 Fin de la chasse au compteur : les informations sont pré-remplies.
+      Enregistrer ajoute le shiny à la collection et clôt la chasse.</p>
+  {% endif %}
+  <form method="post">
+    {% if hunt %}<input type="hidden" name="chasse" value="{{ hunt.id }}">{% endif %}
+    <label for="species">Pokémon</label>
+    <input id="species" name="species" list="pokedex" required autocomplete="off"
+           placeholder="ex. Pikachu" value="{{ form.species or '' }}">
+    <datalist id="pokedex">
+      {% for dex, name in pokedex.items() %}<option value="{{ name }}">#{{ dex }}</option>{% endfor %}
+    </datalist>
+    {{ form_picker('species', form.form) }}
+
+    <label for="nickname">Surnom <span class="opt">(facultatif)</span></label>
+    <input id="nickname" name="nickname" maxlength="40" value="{{ form.nickname or '' }}">
+
+    <label for="game">Jeu de capture</label>
+    <select id="game" name="game" required>
+      <option value="" disabled {% if not form.game %}selected{% endif %}>Choisir un jeu…</option>
+      {% for family_label, family_games in families.values() %}
+        {% if family_games | length > 1 %}<optgroup label="{{ family_label }}">{% endif %}
+        {% for key in family_games %}
+          <option value="{{ key }}" {% if key == form.game %}selected{% endif %}>{{ games[key][0] }}</option>
+        {% endfor %}
+        {% if family_games | length > 1 %}</optgroup>{% endif %}
+      {% endfor %}
+    </select>
+
+    <label for="method">Méthode d'obtention</label>
+    <input id="method" name="method" list="methods" required autocomplete="off" value="{{ form.method or '' }}"
+           data-methods-game="game" data-methods-charm="shiny_charm" data-methods-hint="method-odds">
+    <datalist id="methods"></datalist>
+    <p class="hint" id="method-odds" aria-live="polite"></p>
+    <script type="application/json" id="methods-data">{{ methods | tojson }}</script>
+    {% if method_problems %}
+    <details class="import-errors">
+      <summary>{{ method_problems | length }} problème{{ 's' if method_problems | length > 1 }} dans data/methodes.json</summary>
+      <ul>{% for p in method_problems[:30] %}<li>{{ p }}</li>{% endfor %}</ul>
+    </details>
+    {% endif %}
+
+    <label for="location">Lieu <span class="opt">(facultatif)</span></label>
+    <input id="location" name="location" maxlength="100" placeholder="ex. Route 102"
+           value="{{ form.location or '' }}">
+
+    <label class="checkbox">
+      <input type="checkbox" id="shiny_charm" name="shiny_charm" value="1"
+             {% if form.shiny_charm | string == '1' %}checked{% endif %}> Charme chroma
+    </label>
+
+    <div class="row">
+      <div>
+        <label for="ball">Poké Ball <span class="opt">(facultatif)</span></label>
+        <select id="ball" name="ball">
+          <option value="">—</option>
+          {% for key, (label, _) in balls.items() %}
+            <option value="{{ key }}" {% if key == form.ball %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="encounters">Rencontres <span class="opt">(facultatif)</span></label>
+        <input id="encounters" name="encounters" type="number" min="0" step="1"
+               inputmode="numeric" value="{{ form.encounters }}">
+      </div>
+    </div>
+
+    <label for="duration">Temps de chasse <span class="opt">(facultatif, H:MM:SS)</span></label>
+    <input id="duration" name="duration" placeholder="ex. 2:30:00" pattern="\d+:[0-5]?\d(:[0-5]?\d)?|.*[hms].*"
+           value="{{ form.duration or '' }}">
+
+    <fieldset>
+      <legend>Genre</legend>
+      {% for key, label in genders.items() %}
+        <label class="radio">
+          <input type="radio" name="gender" value="{{ key }}" required
+                 {% if key == form.gender %}checked{% endif %}> {{ label }}
+        </label>
+      {% endfor %}
+    </fieldset>
+
+    <label for="caught_on">Date de capture <span class="opt">(facultatif)</span></label>
+    <input id="caught_on" name="caught_on" type="date" value="{{ form.caught_on or '' }}">
+
+    <fieldset class="phases">
+      <legend>Phases <span class="opt">(shiny trouvés pendant la chasse sans être la cible)</span></legend>
+      {% if phase_info %}
+        <p class="hint">Ce shiny est la <strong>phase {{ phase_info[0] }}</strong> de la chasse de
+          <strong>{{ phase_info[1].name }}</strong> : il ne peut pas avoir de phases lui-même.</p>
+      {% elif candidates %}
+        <p class="hint">Dans l'ordre où ils sont apparus. Cette cible sera la phase finale.</p>
+        <div id="phase-list">
+          {% for id in phases %}{{ phase_row(id) }}{% endfor %}
+        </div>
+        <button type="button" class="secondary" id="add-phase">+ Ajouter une phase</button>
+      {% else %}
+        <p class="hint">Les phases sont des shiny de votre collection : ajoutez-les d'abord,
+          puis choisissez-les ici depuis la fiche de la cible.</p>
+      {% endif %}
+    </fieldset>
+
+    <label for="notes">Note <span class="opt">(facultatif)</span></label>
+    <textarea id="notes" name="notes" rows="3" maxlength="1000"
+              placeholder="Anecdote, nature…">{{ form.notes or '' }}</textarea>
+
+    <details {% if form.sprite_url %}open{% endif %}>
+      <summary>Sprite personnalisé</summary>
+      <p class="hint">Par défaut, le sprite est choisi selon le jeu, la forme et le genre. Collez une URL
+        <code>https://</code> pour utiliser une autre image.</p>
+      <input id="sprite_url" name="sprite_url" type="url" placeholder="https://…"
+             value="{{ form.sprite_url or '' }}" aria-label="URL du sprite">
+    </details>
+
+    <button type="submit">{{ 'Enregistrer' if shiny else 'Ajouter à la collection' }}</button>
+  </form>
+</section>
+
+{% if candidates and not phase_info %}
+<template id="phase-template">{{ phase_row() }}</template>
+<script>
+  const phaseList = document.getElementById("phase-list");
+  document.getElementById("add-phase").addEventListener("click", () => {
+    phaseList.appendChild(document.getElementById("phase-template").content.cloneNode(true));
+    phaseList.lastElementChild.querySelector("select").focus();
+  });
+  phaseList.addEventListener("click", e => {
+    if (e.target.classList.contains("remove-phase")) e.target.closest(".phase-row").remove();
+  });
+</script>
+{% endif %}
+<script src="{{ url_for('static', filename='methods.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Créer un compte · KRABHUNT{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Créer un compte</h1>
+  <form method="post">
+    <label for="username">Pseudo</label>
+    <input id="username" name="username" required autofocus autocomplete="username"
+           minlength="3" maxlength="20" pattern="[A-Za-z0-9_\-]{3,20}"
+           value="{{ request.form.username or '' }}">
+    <p class="hint">3 à 20 caractères : lettres, chiffres, _ ou -. Votre collection sera visible
+      sur <code>/u/pseudo</code>.</p>
+
+    <label for="password">Mot de passe <span class="opt">(8 caractères min.)</span></label>
+    <input id="password" name="password" type="password" required minlength="8"
+           autocomplete="new-password">
+
+    <label for="password_confirm">Confirmer le mot de passe</label>
+    <input id="password_confirm" name="password_confirm" type="password" required minlength="8"
+           autocomplete="new-password">
+
+    <button type="submit">Créer mon compte</button>
+  </form>
+  <p class="muted">Déjà inscrit ? <a href="{{ url_for('login') }}">Connectez-vous</a></p>
+</section>
+{% endblock %}

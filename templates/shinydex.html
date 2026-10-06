@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% from "_macros.html" import collection_tabs with context %}
+{% block title %}Shinydex de {{ owner.username }} · KRABHUNT{% endblock %}
+{% block content %}
+{% set key, label, have, size = current %}
+{{ collection_tabs('collection_shinydex') }}
+<div class="toolbar">
+  <h1>{{ "Mon Shinydex" if is_owner else "Shinydex de " ~ owner.username }}{% if coll != 'principale' %} · {{ coll_label }}{% endif %}</h1>
+  <a href="{{ url_for('collection', username=owner.username, collection=coll) }}">← {{ "Ma collection" if is_owner else "Collection" }}</a>
+</div>
+
+{% if problems %}
+<details class="import-errors" open>
+  <summary>{{ problems | length }} problème{{ 's' if problems | length > 1 }} dans les fichiers de Pokédex (lignes ignorées)</summary>
+  <ul>{% for p in problems[:50] %}<li>{{ p }}</li>{% endfor %}</ul>
+  <p class="hint">Fichiers dans <code>data/shinydex/</code> — format expliqué dans <code>data/shinydex/LISEZMOI.md</code>.</p>
+</details>
+{% endif %}
+
+<form method="get" class="dex-bar">
+  <label class="filter-field" {% if progress | length == 1 %}hidden{% endif %}>
+    <span>Pokédex</span>
+    <select name="dex" onchange="this.form.submit()">
+      {% for k, l, h, n in progress %}
+        <option value="{{ k }}" {% if k == dex %}selected{% endif %}>{{ l }} — {{ h }} / {{ n }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <div class="dex-show" role="group" aria-label="Afficher">
+    <button type="button" class="chip" data-show="all" aria-pressed="true">Tous</button>
+    <button type="button" class="chip" data-show="caught" aria-pressed="false">Capturés</button>
+    <button type="button" class="chip" data-show="missing" aria-pressed="false">Manquants</button>
+  </div>
+  <label class="filter-field dex-search">
+    <span>Rechercher</span>
+    <input type="search" id="dex-search" placeholder="Nom ou n°" autocomplete="off">
+  </label>
+  <noscript><button type="submit" class="secondary">Afficher</button></noscript>
+</form>
+
+<section class="dex-progress viz-root">
+  <div>
+    <span class="kpi-value">{{ have }}</span><span class="dex-total"> / {{ size }}</span>
+    <span class="kpi-sub">
+      {{ (100 * have / size) | round(1) if size else 0 }} % —
+      {% if dex == "national" %}espèces capturées en shiny, tous jeux confondus
+      {% else %}espèces capturées en shiny dans {{ label }}{% endif %}
+    </span>
+  </div>
+  <span class="meter-track"><span class="meter-fill" style="width: {{ (100 * have / size) | round(1) if size else 0 }}%"></span></span>
+</section>
+
+<div id="dex" data-show="all"{% if pixel %} class="pixel"{% endif %}>
+  {% for section in sections %}
+  <section class="dex-section">
+    {% if sections | length > 1 or dex != "national" %}
+      <h2 class="family-title">{{ section.name }}
+        <span class="count">{{ section.caught }} / {{ section.cells | length }}</span></h2>
+    {% endif %}
+    <ol class="dex-grid">
+      {%- for c in section.cells %}
+      {%- set number = '%04d' % c.number if dex == "national" else '%03d' % c.number %}
+      {%- set img %}<img {% if c.sprites | length > 1 %}data-sprites='{{ c.sprites | tojson }}'{% else %}src="{{ c.sprites[0] }}"{% endif %} alt="" loading="lazy" width="64" height="64"><span class="dex-number">#{{ number }}</span><span class="dex-name">{{ c.name }}</span>{% if c.count > 1 %}<span class="dex-count">×{{ c.count }}</span>{% endif %}{% endset %}
+      {%- if c.count %}
+      <li class="dex-cell caught" data-dex="{{ c.species_id }} {{ c.number }}" data-name="{{ c.name }}" title="#{{ number }} {{ c.name }} — {{ c.count }} shiny"><a class="dex-inner" href="{{ url_for('collection', username=owner.username, collection=coll, q=c.species_id, jeu=(dex if dex != 'national' else None), groupe='aucun') }}">{{ img }}</a></li>
+      {%- else %}
+      <li class="dex-cell missing" data-dex="{{ c.species_id }} {{ c.number }}" data-name="{{ c.name }}" title="#{{ number }} {{ c.name }} — pas encore capturé"><span class="dex-inner">{{ img }}</span></li>
+      {%- endif %}
+      {%- endfor %}
+    </ol>
+  </section>
+  {% endfor %}
+  <p class="empty" id="dex-no-match" hidden>Aucun Pokémon ne correspond à cette recherche.</p>
+</div>
+
+<script>
+  // Afficher tous / capturés / manquants, sans recharger la page
+  (() => {
+    const dex = document.getElementById("dex");
+    document.querySelectorAll(".dex-show .chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        dex.dataset.show = btn.dataset.show;
+        document.querySelectorAll(".dex-show .chip").forEach(b => b.setAttribute("aria-pressed", b === btn));
+        filter();
+      });
+    });
+
+    // Recherche par nom (accents facultatifs) ou par n° (national ou du Pokédex affiché)
+    const search = document.getElementById("dex-search");
+    const key = text => text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const cells = [...dex.querySelectorAll(".dex-cell")].map(li => [li, key(li.dataset.name), li.dataset.dex.split(" ")]);
+    function filter() {
+      const q = key(search.value.trim());
+      const number = /^#?\d+$/.test(q) ? String(parseInt(q.replace("#", ""), 10)) : null;
+      cells.forEach(([li, name, numbers]) => {
+        li.hidden = q !== "" && (number ? !numbers.includes(number) : !name.includes(q));
+      });
+      // Sections et message « aucun résultat » selon les cases visibles
+      let any = false;
+      dex.querySelectorAll(".dex-section").forEach(section => {
+        const show = dex.dataset.show;
+        const visible = [...section.querySelectorAll(".dex-cell")].some(li => !li.hidden
+          && (show === "all" || li.classList.contains(show)));
+        section.hidden = !visible;
+        any ||= visible;
+      });
+      document.getElementById("dex-no-match").hidden = any;
+    }
+    search.addEventListener("input", filter);
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Importer · KRABHUNT{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <h1>Importer des shiny</h1>
+  <a href="{{ url_for('collection', username=g.user.username) }}">← Ma collection</a>
+</div>
+
+{% if step == "upload" %}
+<section class="card form-card">
+  <form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="action" value="preview">
+    <label for="fichier">Fichier CSV</label>
+    <input id="fichier" name="fichier" type="file" accept=".csv,text/csv" required>
+
+    <fieldset>
+      <legend>Doublons</legend>
+      <label class="radio"><input type="radio" name="doublons" value="ignorer" checked> Ignorer les shiny déjà présents</label>
+      <label class="radio"><input type="radio" name="doublons" value="garder"> Tout importer</label>
+    </fieldset>
+
+    <button type="submit">Analyser le fichier</button>
+  </form>
+  <p class="hint">Rien n'est enregistré à cette étape : un aperçu s'affiche d'abord.</p>
+</section>
+
+<section class="import-help">
+  <h2>Format attendu</h2>
+  <ul>
+    <li>Le plus simple : un fichier obtenu avec <strong>« ⬇ Exporter en CSV »</strong>, depuis ce compte ou un autre.
+      Les phases et leurs chasses sont reconstituées.</li>
+    <li>Un CSV fait à la main (Excel, Google Sheets…) fonctionne aussi, séparé par <code>;</code> ou <code>,</code>.
+      Colonnes obligatoires : <code>n_pokedex</code> ou <code>espece</code>, <code>jeu</code>, <code>methode</code>, <code>genre</code>.</li>
+    <li>Facultatives : <code>forme</code>, <code>surnom</code>, <code>date_capture</code> (AAAA-MM-JJ ou JJ/MM/AAAA),
+      <code>rencontres</code>, <code>poke_ball</code>, <code>lieu</code>, <code>charme_chroma</code> (oui/non), <code>note</code>.</li>
+    <li>L'export d'un tracker de shiny (sections « Shiny obtenus », « Shiny manqués », « Shasses en cours »)
+      est aussi accepté : les shiny obtenus vont dans la collection, les chasses en cours dans le
+      compteur ; les shiny manqués sont ignorés. Lieu et charme chroma sont repris ; la version
+      du jeu (« Violet ») est gardée en tête de la note, et ressort avec <strong>« ⬇ Format tracker »</strong>.</li>
+    <li>Jeux, Balls et genres s'écrivent en toutes lettres, comme sur le site (« HeartGold / SoulSilver »,
+      « Sombre Ball », « Femelle »), accents et majuscules facultatifs.</li>
+  </ul>
+  <pre class="example">espece;jeu;methode;genre;date_capture;rencontres;poke_ball
+Ectoplasma;HeartGold / SoulSilver;Pokéradar;Mâle;12/03/2024;2500;Sombre Ball
+Rattata d’Alola;Ultra-Soleil / Ultra-Lune;Appel à l'aide (SOS);Femelle;;35;</pre>
+</section>
+
+{% else %}
+<section class="import-summary">
+  <div class="kpi"><span class="kpi-label">À importer</span><span class="kpi-value">{{ to_import | length }}</span></div>
+  {% if hunts or hunt_duplicates %}
+  <div class="kpi"><span class="kpi-label">Chasses en cours</span><span class="kpi-value">{{ hunts | length }}</span></div>
+  {% endif %}
+  <div class="kpi"><span class="kpi-label">Doublons ignorés</span><span class="kpi-value">{{ duplicates | length + hunt_duplicates | length }}</span></div>
+  <div class="kpi"><span class="kpi-label">Lignes en erreur</span><span class="kpi-value">{{ errors | length }}</span></div>
+</section>
+
+{% if notices %}
+<ul class="import-notices">
+  {% for notice in notices %}<li>{{ notice }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+{% if errors %}
+<details class="import-errors" open>
+  <summary>Lignes en erreur (non importées)</summary>
+  <ul>
+    {% for line, message in errors[:100] %}
+      <li>{% if line %}<strong>Ligne {{ line }}</strong> : {% endif %}{{ message }}</li>
+    {% endfor %}
+    {% if errors | length > 100 %}<li>… et {{ errors | length - 100 }} autres.</li>{% endif %}
+  </ul>
+</details>
+{% endif %}
+
+{% if preview %}
+<h2 class="preview-title">Aperçu{% if to_import | length > preview | length %} ({{ preview | length }} premiers){% endif %}</h2>
+<div class="table-scroll">
+  <table class="preview-table">
+    <thead><tr><th></th><th>Pokémon</th><th>Jeu</th><th>Méthode</th><th>Genre</th><th>Date</th><th>Rencontres</th><th>Ball</th><th>Phase</th></tr></thead>
+    <tbody>
+      {% for row in preview %}{% set v = row.view %}
+      <tr>
+        <td><img data-sprites='{{ v.sprites | tojson }}' alt="" width="40" height="40"></td>
+        <td>{{ v.name }}{% if v.nickname %} <span class="muted-small">({{ v.species }})</span>{% endif %}</td>
+        <td>{{ v.game_label }}</td>
+        <td>{{ v.method }}</td>
+        <td>{{ v.gender_label }}</td>
+        <td>{{ v.caught_on | date_fr }}</td>
+        <td>{{ v.encounters | nombre if v.encounters is not none else "" }}</td>
+        <td>{{ v.ball_label or "" }}</td>
+        <td>{% if row.target_id %}phase {{ row.phase_number or "" }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if hunts_preview %}
+<h2 class="preview-title">Chasses en cours (ajoutées au compteur)</h2>
+<div class="table-scroll">
+  <table class="preview-table">
+    <thead><tr><th></th><th>Pokémon</th><th>Jeu</th><th>Méthode</th><th>Rencontres</th><th>Début</th></tr></thead>
+    <tbody>
+      {% for h in hunts_preview %}
+      <tr>
+        <td><img data-sprites='{{ h.sprites | tojson }}' alt="" width="40" height="40"></td>
+        <td>{{ h.species }}</td>
+        <td>{{ h.game_label }}</td>
+        <td>{{ h.method }}</td>
+        <td>{{ h.count | nombre }}</td>
+        <td>{{ h.created_at[:10] | date_fr if h.created_at else "aujourd'hui" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="import-actions">
+  {% if to_import or hunts %}
+  <form method="post">
+    <input type="hidden" name="action" value="confirm">
+    <input type="hidden" name="doublons" value="{{ 'ignorer' if skip_duplicates else 'garder' }}">
+    <textarea name="csv" hidden>{{ csv }}</textarea>
+    <button type="submit">Importer {% if to_import %}{{ to_import | length }} shiny{% endif %}{% if to_import and hunts %} et {% endif %}{% if hunts %}{{ hunts | length }} chasse{{ "s" if hunts | length > 1 }} en cours{% endif %}</button>
+  </form>
+  {% else %}
+  <p class="empty">Rien à importer.</p>
+  {% endif %}
+  <a href="{{ url_for('collection_import') }}">Choisir un autre fichier</a>
+</div>
+{% endif %}
+{% endblock %}

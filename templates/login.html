@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Connexion · KRABHUNT{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Connexion</h1>
+  <form method="post">
+    <label for="username">Nom d'utilisateur</label>
+    <input id="username" name="username" required autofocus autocomplete="username">
+
+    <label for="password">Mot de passe</label>
+    <input id="password" name="password" type="password" required autocomplete="current-password">
+
+    <button type="submit">Se connecter</button>
+  </form>
+  <p class="muted">Pas encore de compte ? <a href="{{ url_for('register') }}">Créez-en un</a></p>
+</section>
+{% endblock %}

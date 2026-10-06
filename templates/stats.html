@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% from "_macros.html" import collection_tabs with context %}
+{% block title %}Statistiques de {{ owner.username }} · KRABHUNT{% endblock %}
+
+{# Barres horizontales : rows = [(libellé, n, icône?)] #}
+{% macro hbars(rows, unit="shiny") %}
+  {% set top = rows | map(attribute=1) | max %}
+  <div class="hbars">
+    {% for row in rows %}
+      {% set label, n = row[0], row[1] %}
+      <div class="hbar" tabindex="0" data-tip="{{ label }} : {{ n | nombre }} {{ unit }}">
+        <span class="hbar-label">
+          {% if row | length > 2 and row[2] %}<img src="{{ row[2] }}" alt="" width="24" height="24">{% endif %}
+          {{ label }}
+        </span>
+        <span class="hbar-track"><span class="hbar-fill" style="width: {{ (100 * n / top) | round(1) }}%"></span></span>
+        <span class="hbar-value">{{ n | nombre }}</span>
+      </div>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+{# Colonnes : rows = [(libellé, n)] ; valeur sur le chapeau seulement si peu de colonnes #}
+{% macro columns(rows, unit="shiny") %}
+  {% set top = [rows | map(attribute=1) | max, 1] | max %}
+  {% set labelled = rows | length <= 12 %}
+  <div class="columns-scroll">
+    <div class="columns" style="--n: {{ rows | length }}">
+      {% for label, n in rows %}
+        <div class="column" tabindex="0" data-tip="{{ label }} : {{ n | nombre }} {{ unit }}">
+          <span class="column-bar-zone">
+            {% if labelled and n %}<span class="column-value">{{ n | nombre }}</span>{% endif %}
+            <span class="column-bar" style="height: {{ (100 * n / top) | round(1) }}%"></span>
+          </span>
+          <span class="column-label">{{ label }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro data_table(rows, head) %}
+  <details class="data-table">
+    <summary>Voir les données</summary>
+    <table>
+      <thead><tr><th>{{ head }}</th><th>Nombre</th></tr></thead>
+      <tbody>
+        {% for row in rows %}<tr><td>{{ row[0] }}</td><td>{{ row[1] | nombre }}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </details>
+{% endmacro %}
+
+{% block content %}
+{{ collection_tabs('collection_stats') }}
+<div class="toolbar">
+  <h1>{{ "Mes statistiques" if is_owner else "Statistiques de " ~ owner.username }}{% if coll != 'principale' %} · {{ coll_label }}{% endif %}</h1>
+  <a href="{{ url_for('collection', username=owner.username, collection=coll) }}">← {{ "Ma collection" if is_owner else "Collection" }}</a>
+</div>
+
+{% if not s.total %}
+<p class="empty">Aucun shiny pour l'instant : les statistiques apparaîtront avec la collection.</p>
+{% else %}
+<div class="stats viz-root">
+
+  <section class="kpis">
+    <div class="kpi kpi-hero">
+      <span class="kpi-label">Shiny dans la collection</span>
+      <span class="kpi-value">{{ s.total | nombre }}</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Espèces différentes</span>
+      <span class="kpi-value">{{ s.species | nombre }}</span>
+      <span class="kpi-sub">sur {{ s.species_total | nombre }} ({{ (100 * s.species / s.species_total) | round(1) }} %)</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Rencontres au total</span>
+      <span class="kpi-value">{{ s.encounters_total | nombre }}</span>
+      <span class="kpi-sub">renseignées pour {{ s.encounters_known }} shiny</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Rencontres par shiny</span>
+      <span class="kpi-value">{{ s.encounters_avg | nombre }}</span>
+      <span class="kpi-sub">en moyenne · médiane {{ s.encounters_median | nombre }}</span>
+    </div>
+    {% if s.duration_known %}
+    <div class="kpi">
+      <span class="kpi-label">Temps de chasse au total</span>
+      <span class="kpi-value">{{ s.duration_total | duree }}</span>
+      <span class="kpi-sub">renseigné pour {{ s.duration_known }} shiny</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Temps par shiny</span>
+      <span class="kpi-value">{{ s.duration_avg | duree }}</span>
+      <span class="kpi-sub">en moyenne · médiane {{ s.duration_median | duree }}</span>
+    </div>
+    {% endif %}
+    <div class="kpi">
+      <span class="kpi-label">Phases</span>
+      <span class="kpi-value">{{ s.phases | nombre }}</span>
+      <span class="kpi-sub">dans {{ s.hunts_with_phases }} chasse{{ 's' if s.hunts_with_phases > 1 }}</span>
+    </div>
+  </section>
+
+  <div class="charts">
+    {% if s.timeline %}
+    <figure class="chart chart-wide">
+      <figcaption>
+        <h2>Captures par {{ s.granularity }}</h2>
+        {% if s.undated %}<p>{{ s.undated }} shiny sans date non comptés</p>{% endif %}
+      </figcaption>
+      {{ columns(s.timeline) }}
+      {{ data_table(s.timeline, s.granularity | capitalize) }}
+    </figure>
+    {% endif %}
+
+    <figure class="chart">
+      <figcaption><h2>Par famille de jeux</h2><p>Dans l'ordre de sortie</p></figcaption>
+      {{ hbars(s.by_family) }}
+      {{ data_table(s.by_family, "Jeux") }}
+    </figure>
+
+    <figure class="chart">
+      <figcaption><h2>Par méthode</h2></figcaption>
+      {{ hbars(s.by_method) }}
+      {{ data_table(s.by_method, "Méthode") }}
+    </figure>
+
+    {% if s.by_ball %}
+    <figure class="chart">
+      <figcaption>
+        <h2>Par Poké Ball</h2>
+        {% if s.no_ball %}<p>{{ s.no_ball }} shiny sans Ball renseignée</p>{% endif %}
+      </figcaption>
+      {{ hbars(s.by_ball) }}
+      {{ data_table(s.by_ball, "Poké Ball") }}
+    </figure>
+    {% endif %}
+
+    {% if s.encounters_known %}
+    <figure class="chart">
+      <figcaption><h2>Rencontres nécessaires</h2><p>Nombre de shiny par tranche</p></figcaption>
+      {{ columns(s.buckets) }}
+      {{ data_table(s.buckets, "Rencontres") }}
+    </figure>
+    {% endif %}
+
+    {% if s.duration_known %}
+    <figure class="chart">
+      <figcaption><h2>Temps de chasse</h2><p>Nombre de shiny par tranche</p></figcaption>
+      {{ columns(s.duration_buckets) }}
+      {{ data_table(s.duration_buckets, "Temps") }}
+    </figure>
+    {% endif %}
+
+    <figure class="chart">
+      <figcaption><h2>Répartition par genre</h2></figcaption>
+      <div class="stack" role="img" aria-label="{% for k, label, n in s.gender %}{{ label }} {{ n }}{{ ', ' if not loop.last }}{% endfor %}">
+        {% for key, label, n in s.gender %}
+          <span class="stack-seg seg-{{ key }}" style="flex-grow: {{ n }}" tabindex="0"
+                data-tip="{{ label }} : {{ n }} ({{ (100 * n / s.total) | round | int }} %)"></span>
+        {% endfor %}
+      </div>
+      <ul class="legend">
+        {% for key, label, n in s.gender %}
+          <li><span class="swatch seg-{{ key }}"></span>{{ label }} <strong>{{ n }}</strong>
+            <span class="muted-small">({{ (100 * n / s.total) | round | int }} %)</span></li>
+        {% endfor %}
+      </ul>
+    </figure>
+
+    <figure class="chart">
+      <figcaption><h2>Pokédex shiny</h2><p>Espèces différentes par génération</p></figcaption>
+      <div class="meters">
+        {% for gen, have, size in s.pokedex %}
+          <div class="meter" tabindex="0" data-tip="{{ gen }}e génération : {{ have }} / {{ size }} espèces">
+            <span class="meter-label">Gén. {{ gen }}</span>
+            <span class="meter-track"><span class="meter-fill" style="width: {{ (100 * have / size) | round(1) }}%"></span></span>
+            <span class="meter-value">{{ have }} / {{ size }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </figure>
+  </div>
+
+  {% if s.records %}
+  <section class="records">
+    <h2>Records</h2>
+    <div class="record-grid">
+      {% for title, shiny, detail in s.records %}
+        <div class="record">
+          <img data-sprites='{{ shiny.sprites | tojson }}' alt="" loading="lazy">
+          <div>
+            <span class="kpi-label">{{ title }}</span>
+            <strong>{{ shiny.name }}</strong>
+            <span class="muted-small">{{ detail }} · {{ shiny.game_label }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if s.top_species %}
+  <section class="records">
+    <h2>Espèces les plus collectionnées</h2>
+    <div class="record-grid">
+      {% for name, n, shiny in s.top_species %}
+        <div class="record">
+          <img data-sprites='{{ shiny.sprites | tojson }}' alt="" loading="lazy">
+          <div><strong>{{ name }}</strong><span class="muted-small">{{ n }} shiny</span></div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+
+<div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+<script>
+  // Infobulle commune à toutes les marques [data-tip] (survol et focus clavier)
+  (() => {
+    const tip = document.getElementById("tooltip");
+    const show = (el, x, y) => {
+      tip.textContent = el.dataset.tip;
+      tip.hidden = false;
+      const r = tip.getBoundingClientRect();
+      tip.style.left = Math.min(Math.max(8, x - r.width / 2), innerWidth - r.width - 8) + "px";
+      tip.style.top = Math.max(8, y - r.height - 12) + "px";
+    };
+    document.querySelectorAll("[data-tip]").forEach(el => {
+      el.addEventListener("mousemove", e => show(el, e.clientX, e.clientY));
+      el.addEventListener("mouseleave", () => { tip.hidden = true; });
+      el.addEventListener("focus", () => {
+        const r = el.getBoundingClientRect();
+        show(el, r.left + r.width / 2, r.top);
+      });
+      el.addEventListener("blur", () => { tip.hidden = true; });
+    });
+  })();
+</script>
+{% endif %}
+{% endblock %}

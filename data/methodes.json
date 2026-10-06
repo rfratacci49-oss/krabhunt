@@ -1,0 +1,179 @@
+{
+  "standard": [
+    {"jeux": ["or", "argent", "cristal", "rs", "emeraude", "rfvf", "colosseum", "xd",
+              "dp", "platine", "hgss", "pbr", "nb"], "taux": 8192},
+    {"jeux": ["nb2"], "taux": 8192, "charme": 2731},
+    {"jeux": ["xy", "rosa", "sl", "usul", "lgpe", "epee_bouclier", "deps", "ev"], "taux": 4096, "charme": 1365},
+    {"jeux": ["lpa"], "taux": 4096, "charme": 819,
+     "note": "Charme avec recherche niv. 10 ; 1/585 si la recherche est parfaite"},
+    {"jeux": ["lza"], "taux": 4096, "charme": 1024, "note": "Charme : à vérifier"},
+    {"jeux": ["pixelmonworld"], "taux": 6000},
+    {"jeux": ["cobblemon"], "taux": 8192, "note": "Taux par défaut de Cobblemon : dépend de la config du serveur"}
+  ],
+  "methodes": [
+    {
+      "nom": "Rencontres",
+      "alias": ["Rencontre aléatoire"],
+      "jeux": "standard"
+    },
+    {
+      "nom": "Shiny hasard",
+      "description": "Shiny trouvé par hasard, sans le chasser",
+      "jeux": "standard"
+    },
+    {
+      "nom": "Resets",
+      "alias": ["Soft reset"],
+      "jeux": "standard",
+      "remplace": [
+        {"jeux": ["pixelmonworld"], "taux": 1000, "note": "Non légendaire ; 1/3000 pour un légendaire (« Resets légendaire »)"}
+      ]
+    },
+    {
+      "nom": "Resets légendaire",
+      "description": "Reset d'un Pokémon légendaire",
+      "jeux": [
+        {"jeux": ["pixelmonworld"], "taux": 3000}
+      ]
+    },
+    {
+      "nom": "Œufs",
+      "alias": ["Œuf"],
+      "jeux": "standard",
+      "sauf": ["colosseum", "xd", "pbr", "lgpe", "lpa", "lza"]
+    },
+    {
+      "nom": "Masuda",
+      "alias": ["Masuda (œufs)"],
+      "jeux": [
+        {"jeux": ["dp", "platine", "hgss"], "taux": 1638},
+        {"jeux": ["nb"], "taux": 1365},
+        {"jeux": ["nb2"], "taux": 1365, "charme": 1024},
+        {"jeux": ["xy", "rosa", "sl", "usul", "epee_bouclier", "deps", "ev"], "taux": 683, "charme": 512}
+      ]
+    },
+    {
+      "nom": "Pokéradar",
+      "jeux": [
+        {"jeux": ["dp", "platine"], "taux": 200, "note": "Chaîne de 40"},
+        {"jeux": ["xy"], "taux": 200, "note": "Chaîne de 40"},
+        {"jeux": ["deps"], "taux": 99, "note": "Chaîne de 40"}
+      ]
+    },
+    {
+      "nom": "Pokéradar full odds",
+      "description": "Pokéradar sans chaîne",
+      "jeux": [
+        {"jeux": ["dp", "platine"], "taux": 8192},
+        {"jeux": ["xy", "deps"], "taux": 4096, "charme": 1365}
+      ]
+    },
+    {
+      "nom": "Pêche",
+      "description": "Pêche sans chaîne",
+      "jeux": "standard",
+      "sauf": ["colosseum", "xd", "pbr", "lgpe"]
+    },
+    {
+      "nom": "Pêche à la chaîne",
+      "alias": ["Chaîne de pêche"],
+      "jeux": [
+        {"jeux": ["xy", "rosa"], "taux": 100, "charme": 95, "note": "Chaîne de 20 et plus"}
+      ]
+    },
+    {
+      "nom": "Hordes",
+      "jeux": [
+        {"jeux": ["xy", "rosa"], "taux": 819, "charme": 273,
+         "note": "Taux par Horde"}
+      ]
+    },
+    {
+      "nom": "Safari des amis",
+      "jeux": [
+        {"jeux": ["xy"], "taux": 819, "charme": 585}
+      ]
+    },
+    {
+      "nom": "Navi-Dex",
+      "jeux": [
+        {"jeux": ["rosa"], "taux": null, "note": "Variable selon le niveau de recherche et la chaîne"}
+      ]
+    },
+    {
+      "nom": "SOS",
+      "alias": ["Appel à l'aide (SOS)"],
+      "jeux": [
+        {"jeux": ["sl", "usul"], "taux": 315, "charme": 273, "note": "Chaîne de 31 et plus"}
+      ]
+    },
+    {
+      "nom": "Ultra-Brèche",
+      "jeux": [
+        {"jeux": ["usul"], "taux": null, "note": "Variable selon la distance et la rareté"}
+      ]
+    },
+    {
+      "nom": "Combo Capture",
+      "alias": ["Chaîne de capture (Let's Go)"],
+      "jeux": [
+        {"jeux": ["lgpe"], "taux": 315, "charme": 273, "note": "Combo de 31 et plus, avec Parfum"}
+      ]
+    },
+    {
+      "nom": "Expédition Dynamax",
+      "jeux": [
+        {"jeux": ["epee_bouclier"], "taux": 300, "charme": 100}
+      ]
+    },
+    {
+      "nom": "Raid Dynamax",
+      "jeux": [
+        {"jeux": ["epee_bouclier"], "taux": 4096, "note": "Le charme chroma n'a pas d'effet"}
+      ]
+    },
+    {
+      "nom": "Apparitions massives",
+      "alias": ["Apparition massive"],
+      "jeux": [
+        {"jeux": ["lpa"], "taux": 158, "charme": 137, "note": "Charme avec recherche niv. 10"},
+        {"jeux": ["ev"], "taux": 683, "charme": 512, "note": "60 K.O. et plus + Aura Brillance niv. 3"}
+      ]
+    },
+    {
+      "nom": "Apparitions massives full odds",
+      "description": "Apparition massive sans bonus (moins de 60 K.O., sans sandwich)",
+      "jeux": [
+        {"jeux": ["ev"], "taux": 4096, "charme": 1365}
+      ]
+    },
+    {
+      "nom": "Méga-Apparitions",
+      "jeux": [
+        {"jeux": ["lpa"], "taux": 315, "charme": 241, "note": "Charme avec recherche niv. 10"}
+      ]
+    },
+    {
+      "nom": "Aura Brillance",
+      "jeux": [
+        {"jeux": ["ev"], "taux": 1024, "charme": 683, "note": "Niveau 3, hors apparition massive"}
+      ]
+    },
+    {
+      "nom": "Raid Téracristal",
+      "jeux": [
+        {"jeux": ["ev"], "taux": 4096, "note": "Le charme chroma n'a pas d'effet"}
+      ]
+    },
+    {
+      "nom": "Shiny garanti",
+      "jeux": "tous",
+      "taux": 1
+    },
+    {
+      "nom": "Événement / distribution",
+      "jeux": "tous",
+      "taux": null
+    }
+  ]
+}

@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% from "_macros.html" import form_picker with context %}
+{% block title %}{{ hunt.species }} · Compteur · KRABHUNT{% endblock %}
+{% block content %}
+<p class="back"><a href="{{ url_for('hunts') }}">← Toutes les chasses</a></p>
+
+<section class="counter">
+  <img class="counter-sprite" data-sprites='{{ hunt.sprites | tojson }}' alt="{{ hunt.species }} shiny">
+  <h1>{{ hunt.species }}</h1>
+  <p class="muted-small">
+    {{ hunt.game_label }} · {{ hunt.method }}{% if hunt.location %} · {{ hunt.location }}{% endif %}
+    {% if hunt.shiny_charm %} · ✨ Charme chroma{% endif %}
+    {% if phases %} · <strong>phase {{ phases | length + 1 }}</strong>{% endif %}
+  </p>
+  {% if hunt.odds %}
+  <p class="muted-small odds-line" title="{{ hunt.odds_note }}">
+    Taux : <strong>1/{{ hunt.odds | nombre }}</strong>{% if hunt.shiny_charm %} (charme chroma){% endif %}
+    {% if hunt.odds_note %} · {{ hunt.odds_note }}{% endif %}
+    {% if hunt.mode == "count" and hunt.odds > 1 %}<br><span id="proba"></span>{% endif %}
+  </p>
+  {% endif %}
+
+  {% if hunt.mode == "timer" %}
+  <output id="timer" class="count-value" aria-live="off">{{ hunt.elapsed_now | chrono }}</output>
+
+  <div class="counter-buttons">
+    <button type="button" class="plus" id="toggle">{{ 'Pause' if hunt.started_at else 'Démarrer' }}</button>
+  </div>
+  <p class="hint">Raccourci : <kbd>Espace</kbd> pour démarrer ou mettre en pause.
+    Le timer continue même si la page est fermée.</p>
+
+  <details class="counter-settings">
+    <summary>Réglages</summary>
+    <label for="set-time">Fixer le temps (H:MM:SS)</label>
+    <input id="set-time" value="{{ hunt.elapsed_now | chrono }}" placeholder="0:00:00">
+  </details>
+  {% else %}
+  <output id="count" class="count-value" aria-live="polite">{{ hunt.count }}</output>
+
+  <div class="counter-buttons">
+    <button type="button" class="minus" id="minus" aria-label="Retirer">−</button>
+    <button type="button" class="plus" id="plus">+<span id="step-label">{{ hunt.step }}</span></button>
+  </div>
+  <p class="hint">Raccourcis : <kbd>Espace</kbd> ou <kbd>+</kbd> pour ajouter, <kbd>−</kbd> pour retirer.</p>
+
+  <details class="counter-settings">
+    <summary>Réglages</summary>
+    <div class="row">
+      <div>
+        <label for="step">Pas</label>
+        <input id="step" type="number" min="1" max="100" value="{{ hunt.step }}">
+      </div>
+      <div>
+        <label for="set-value">Fixer le compteur</label>
+        <input id="set-value" type="number" min="0" value="{{ hunt.count }}">
+      </div>
+    </div>
+  </details>
+  {% endif %}
+</section>
+
+<div class="counter-actions">
+  <details class="card phase-form">
+    <summary>✨ Un shiny en phase !</summary>
+    <form method="post" action="{{ url_for('hunt_phase', hunt_id=hunt.id) }}">
+      <p class="hint">Il sera ajouté à votre collection ({{ hunt.game_label }}, {{ hunt.method }},
+        {{ 'temps écoulé' if hunt.mode == 'timer' else 'rencontre en cours' }}) comme phase {{ phases | length + 1 }} de cette chasse.</p>
+      <label for="phase-species">Pokémon</label>
+      <input id="phase-species" name="species" list="pokedex" required autocomplete="off">
+      <datalist id="pokedex">
+        {% for dex, name in pokedex.items() %}<option value="{{ name }}">#{{ dex }}</option>{% endfor %}
+      </datalist>
+      {{ form_picker('phase-species', select_id='phase-form') }}
+      <fieldset>
+        <legend>Genre</legend>
+        {% for key, label in genders.items() %}
+          <label class="radio"><input type="radio" name="gender" value="{{ key }}" required> {{ label }}</label>
+        {% endfor %}
+      </fieldset>
+      <label for="phase-ball">Poké Ball <span class="opt">(facultatif)</span></label>
+      <select id="phase-ball" name="ball">
+        <option value="">—</option>
+        {% for key, (label, _) in balls.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+      </select>
+      <label for="phase-nickname">Surnom <span class="opt">(facultatif)</span></label>
+      <input id="phase-nickname" name="nickname" maxlength="40">
+      <button type="submit">Ajouter la phase</button>
+    </form>
+  </details>
+
+  <a class="btn btn-found" href="{{ url_for('shiny_new', chasse=hunt.id) }}">🎉 {{ hunt.species }} shiny trouvé !</a>
+</div>
+
+{% if phases %}
+<section class="pending-phases">
+  <h2>Phases de cette chasse</h2>
+  <ol>
+    {% for p in phases %}
+    <li>
+      <img data-sprites='{{ p.sprites | tojson }}' alt="" loading="lazy">
+      <span><strong>Phase {{ loop.index }}</strong> · {{ p.name }}
+        {% if p.ball_icon %}<img class="phase-ball" src="{{ p.ball_icon }}" alt="{{ p.ball_label }}" title="{{ p.ball_label }}" width="20" height="20">
+        {% elif p.ball_label %}<small>{{ p.ball_label }}</small>{% endif %}
+        {% if p.encounters is not none %}<small>rencontre {{ '{:,}'.format(p.encounters).replace(',', ' ') }}</small>{% endif %}
+        {% if p.duration is not none %}<small>après {{ p.duration | duree }}</small>{% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+
+<form method="post" action="{{ url_for('hunt_delete', hunt_id=hunt.id) }}" class="abandon"
+      onsubmit="return window.confirm('Abandonner cette chasse ? Les phases restent dans la collection.')">
+  <button type="submit" class="link danger">Abandonner la chasse</button>
+</form>
+
+{% if hunt.mode == "timer" %}
+<script>
+  (() => {
+    const url = "{{ url_for('hunt_timer', hunt_id=hunt.id) }}";
+    const out = document.getElementById("timer");
+    const toggle = document.getElementById("toggle");
+    const setInput = document.getElementById("set-time");
+    // Temps de référence : `base` secondes au moment `since` (horloge locale) si le timer tourne
+    let base = {{ hunt.elapsed_now }};
+    let running = {{ 'true' if hunt.started_at else 'false' }};
+    let since = performance.now();
+
+    const elapsed = () => base + (running ? Math.floor((performance.now() - since) / 1000) : 0);
+    const clock = s => `${Math.floor(s / 3600)}:${String(Math.floor(s % 3600 / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+    const render = () => {
+      out.textContent = clock(elapsed());
+      toggle.textContent = running ? "Pause" : "Démarrer";
+      toggle.classList.toggle("paused", !running);
+      document.title = `${running ? "⏱" : "⏸"} ${clock(elapsed())} · {{ hunt.species }}`;
+    };
+
+    async function send(payload) {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        base = data.elapsed; running = data.running; since = performance.now();
+        setInput.value = clock(base);
+        render();
+      } catch (e) {
+        out.classList.add("error");
+        setTimeout(() => out.classList.remove("error"), 800);
+      }
+    }
+
+    const flip = () => {
+      // Affichage immédiat, le serveur confirme ensuite
+      base = elapsed(); running = !running; since = performance.now(); render();
+      send({ action: running ? "start" : "pause" });
+    };
+    toggle.addEventListener("click", flip);
+    document.addEventListener("keydown", e => {
+      if (e.target.closest("input, textarea, select, summary, button")) return;
+      if (e.key === " ") { e.preventDefault(); flip(); }
+    });
+    setInput.addEventListener("change", () => {
+      const m = setInput.value.trim().match(/^(\d+):([0-5]?\d)(?::([0-5]?\d))?$/);
+      if (m) send({ value: (+m[1]) * 3600 + (+m[2]) * 60 + (+(m[3] || 0)) });
+    });
+
+    render();
+    setInterval(render, 1000);
+  })();
+</script>
+{% else %}
+<script>
+  (() => {
+    const url = "{{ url_for('hunt_count', hunt_id=hunt.id) }}";
+    const out = document.getElementById("count");
+    const stepInput = document.getElementById("step");
+    const stepLabel = document.getElementById("step-label");
+    const setInput = document.getElementById("set-value");
+    const fmt = n => n.toLocaleString("fr-FR");
+    let count = {{ hunt.count }};
+    let step = {{ hunt.step }};
+    let pending = 0;
+
+    const odds = {{ hunt.odds or 0 }};
+    const proba = document.getElementById("proba");
+    const render = () => {
+      out.textContent = fmt(count); setInput.value = count;
+      if (proba) {
+        // Probabilité d'avoir eu au moins un shiny en `count` rencontres
+        const p = 1 - Math.pow(1 - 1 / odds, count);
+        proba.textContent = `${(100 * p).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % de chances d'avoir déjà trouvé`
+          + (count > odds ? ` · ${(count / odds).toLocaleString("fr-FR", { maximumFractionDigits: 1 })}× le taux` : "");
+      }
+    };
+
+    // Affichage immédiat, puis synchronisation avec la valeur enregistrée côté serveur
+    async function send(payload) {
+      pending++;
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        if (--pending === 0) { count = data.count; step = data.step; render(); }
+      } catch (e) {
+        pending--;
+        out.classList.add("error");
+        setTimeout(() => out.classList.remove("error"), 800);
+      }
+    }
+
+    const add = n => {
+      count = Math.max(0, count + n);
+      render();
+      out.classList.remove("bump"); void out.offsetWidth; out.classList.add("bump");
+      send({ delta: n });
+    };
+
+    document.getElementById("plus").addEventListener("click", () => add(step));
+    document.getElementById("minus").addEventListener("click", () => add(-step));
+
+    document.addEventListener("keydown", e => {
+      if (e.target.closest("input, textarea, select, summary, button")) return;
+      if (e.key === " " || e.key === "+" || e.key === "ArrowUp") { e.preventDefault(); add(step); }
+      if (e.key === "-" || e.key === "ArrowDown") { e.preventDefault(); add(-step); }
+    });
+
+    stepInput.addEventListener("change", () => {
+      const n = parseInt(stepInput.value, 10);
+      if (n >= 1 && n <= 100) { step = n; stepLabel.textContent = n; send({ step: n }); }
+    });
+    setInput.addEventListener("change", () => {
+      const n = parseInt(setInput.value, 10);
+      if (n >= 0) { count = n; render(); send({ value: n }); }
+    });
+
+    render();
+  })();
+</script>
+{% endif %}
+{% endblock %}

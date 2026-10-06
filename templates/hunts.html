@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% from "_macros.html" import form_picker with context %}
+{% block title %}Compteur · KRABHUNT{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <h1>Compteur</h1>
+</div>
+
+{% if hunts %}
+<div class="hunt-list">
+  {% for h in hunts %}
+  <a class="hunt-card" href="{{ url_for('hunt_counter', hunt_id=h.id) }}">
+    <img data-sprites='{{ h.sprites | tojson }}' alt="{{ h.species }} shiny" loading="lazy">
+    <div>
+      <strong>{{ h.species }}</strong>
+      <span class="muted-small">{{ h.game_label }} · {{ h.method }}{% if h.location %} · {{ h.location }}{% endif %}{% if h.shiny_charm %} · ✨ Charme chroma{% endif %}</span>
+      {% if h.phases %}<span class="muted-small">Phase {{ h.phases + 1 }} en cours</span>{% endif %}
+    </div>
+    {% if h.mode == "timer" %}
+    <span class="hunt-count" title="{{ 'En cours' if h.started_at else 'En pause' }}">{{ '⏱' if h.started_at else '⏸' }} {{ h.elapsed_now | chrono }}</span>
+    {% else %}
+    <span class="hunt-count">{{ '{:,}'.format(h.count).replace(',', ' ') }}</span>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">Aucune chasse en cours.</p>
+{% endif %}
+
+<section class="card form-card new-hunt">
+  <h2>Nouvelle chasse</h2>
+  <form method="post">
+    <label for="species">Pokémon ciblé</label>
+    <input id="species" name="species" list="pokedex" required autocomplete="off"
+           placeholder="ex. Ectoplasma" value="{{ form.species or '' }}">
+    <datalist id="pokedex">
+      {% for dex, name in pokedex.items() %}<option value="{{ name }}">#{{ dex }}</option>{% endfor %}
+    </datalist>
+    {{ form_picker('species', form.form) }}
+
+    <label for="game">Jeu</label>
+    <select id="game" name="game" required>
+      <option value="" disabled {% if not form.game %}selected{% endif %}>Choisir un jeu…</option>
+      {% for family_label, family_games in families.values() %}
+        {% if family_games | length > 1 %}<optgroup label="{{ family_label }}">{% endif %}
+        {% for key in family_games %}
+          <option value="{{ key }}" {% if key == form.game %}selected{% endif %}>{{ games[key][0] }}</option>
+        {% endfor %}
+        {% if family_games | length > 1 %}</optgroup>{% endif %}
+      {% endfor %}
+    </select>
+
+    <fieldset>
+      <legend>Compter</legend>
+      <label class="radio"><input type="radio" name="mode" value="count"
+             {% if form.mode != 'timer' %}checked{% endif %}> Les rencontres</label>
+      <label class="radio"><input type="radio" name="mode" value="timer"
+             {% if form.mode == 'timer' %}checked{% endif %}> Le temps (timer)</label>
+    </fieldset>
+
+    <label for="method">Méthode</label>
+    <input id="method" name="method" list="methods" required autocomplete="off" value="{{ form.method or '' }}"
+           data-methods-game="game" data-methods-charm="shiny_charm" data-methods-hint="method-odds">
+    <datalist id="methods"></datalist>
+    <p class="hint" id="method-odds" aria-live="polite"></p>
+    <script type="application/json" id="methods-data">{{ methods | tojson }}</script>
+    {% if method_problems %}
+    <details class="import-errors">
+      <summary>{{ method_problems | length }} problème{{ 's' if method_problems | length > 1 }} dans data/methodes.json</summary>
+      <ul>{% for p in method_problems[:30] %}<li>{{ p }}</li>{% endfor %}</ul>
+    </details>
+    {% endif %}
+
+    <label for="location">Lieu <span class="opt">(facultatif)</span></label>
+    <input id="location" name="location" maxlength="100" placeholder="ex. Route 102"
+           value="{{ form.location or '' }}">
+
+    <label class="checkbox">
+      <input type="checkbox" id="shiny_charm" name="shiny_charm" value="1"
+             {% if form.shiny_charm | string == '1' %}checked{% endif %}> Charme chroma
+    </label>
+
+    <button type="submit">Lancer la chasse</button>
+  </form>
+</section>
+<script src="{{ url_for('static', filename='methods.js') }}"></script>
+{% endblock %}

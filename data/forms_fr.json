@@ -1,0 +1,2557 @@
+{
+ "19": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Rattata d’Alola",
+    "sprite": "10091"
+   }
+  }
+ },
+ "20": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Rattatac d’Alola",
+    "sprite": "10092"
+   }
+  }
+ },
+ "25": {
+  "default": "Forme normale",
+  "forms": {
+   "rock-star": {
+    "name": "Pikachu Rockeur",
+    "full": "Pikachu Rockeur",
+    "sprite": "10080"
+   },
+   "belle": {
+    "name": "Pikachu Lady",
+    "full": "Pikachu Lady",
+    "sprite": "10081"
+   },
+   "pop-star": {
+    "name": "Pikachu Star",
+    "full": "Pikachu Star",
+    "sprite": "10082"
+   },
+   "phd": {
+    "name": "Pikachu Docteur",
+    "full": "Pikachu Docteur",
+    "sprite": "10083"
+   },
+   "libre": {
+    "name": "Pikachu Catcheur",
+    "full": "Pikachu Catcheur",
+    "sprite": "10084"
+   },
+   "cosplay": {
+    "name": "Pikachu Cosplayeur",
+    "full": "Pikachu Cosplayeur",
+    "sprite": "10085"
+   },
+   "original-cap": {
+    "name": "Casquette Originale",
+    "full": "Pikachu Casquette Originale",
+    "sprite": "10094"
+   },
+   "hoenn-cap": {
+    "name": "Casquette de Hoenn",
+    "full": "Pikachu Casquette de Hoenn",
+    "sprite": "10095"
+   },
+   "sinnoh-cap": {
+    "name": "Casquette de Sinnoh",
+    "full": "Pikachu Casquette de Sinnoh",
+    "sprite": "10096"
+   },
+   "unova-cap": {
+    "name": "Casquette d’Unys",
+    "full": "Pikachu Casquette d’Unys",
+    "sprite": "10097"
+   },
+   "kalos-cap": {
+    "name": "Casquette de Kalos",
+    "full": "Pikachu Casquette de Kalos",
+    "sprite": "10098"
+   },
+   "alola-cap": {
+    "name": "Casquette d’Alola",
+    "full": "Pikachu Casquette d’Alola",
+    "sprite": "10099"
+   },
+   "partner-cap": {
+    "name": "Casquette Partenaire",
+    "full": "Pikachu Casquette Partenaire",
+    "sprite": "10148"
+   },
+   "starter": {
+    "name": "Starter",
+    "full": "Pikachu Partenaire",
+    "sprite": "10158"
+   },
+   "world-cap": {
+    "name": "Casquette Monde",
+    "full": "Pikachu Casquette Monde",
+    "sprite": "10160"
+   }
+  }
+ },
+ "26": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Raichu d’Alola",
+    "sprite": "10100"
+   }
+  }
+ },
+ "27": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Sabelette d’Alola",
+    "sprite": "10101"
+   }
+  }
+ },
+ "28": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Sablaireau d’Alola",
+    "sprite": "10102"
+   }
+  }
+ },
+ "37": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Goupix d’Alola",
+    "sprite": "10103"
+   }
+  }
+ },
+ "38": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Feunard d’Alola",
+    "sprite": "10104"
+   }
+  }
+ },
+ "50": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Taupiqueur d’Alola",
+    "sprite": "10105"
+   }
+  }
+ },
+ "51": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Triopikeur d’Alola",
+    "sprite": "10106"
+   }
+  }
+ },
+ "52": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Miaouss d’Alola",
+    "sprite": "10107"
+   },
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Miaouss de Galar",
+    "sprite": "10161"
+   }
+  }
+ },
+ "53": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Persian d’Alola",
+    "sprite": "10108"
+   }
+  }
+ },
+ "58": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Caninos de Hisui",
+    "sprite": "10229"
+   }
+  }
+ },
+ "59": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Arcanin de Hisui",
+    "sprite": "10230"
+   }
+  }
+ },
+ "74": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Racaillou d’Alola",
+    "sprite": "10109"
+   }
+  }
+ },
+ "75": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Gravalanch d’Alola",
+    "sprite": "10110"
+   }
+  }
+ },
+ "76": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Grolem d’Alola",
+    "sprite": "10111"
+   }
+  }
+ },
+ "77": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Ponyta de Galar",
+    "sprite": "10162"
+   }
+  }
+ },
+ "78": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Galopa de Galar",
+    "sprite": "10163"
+   }
+  }
+ },
+ "79": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Ramoloss de Galar",
+    "sprite": "10164"
+   }
+  }
+ },
+ "80": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Flagadoss de Galar",
+    "sprite": "10165"
+   }
+  }
+ },
+ "83": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Canarticho de Galar",
+    "sprite": "10166"
+   }
+  }
+ },
+ "88": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Tadmorv d’Alola",
+    "sprite": "10112"
+   }
+  }
+ },
+ "89": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Grotadmorv d’Alola",
+    "sprite": "10113"
+   }
+  }
+ },
+ "100": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Voltorbe de Hisui",
+    "sprite": "10231"
+   }
+  }
+ },
+ "101": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Électrode de Hisui",
+    "sprite": "10232"
+   }
+  }
+ },
+ "103": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Noadkoko d’Alola",
+    "sprite": "10114"
+   }
+  }
+ },
+ "105": {
+  "default": "Forme normale",
+  "forms": {
+   "alola": {
+    "name": "Forme d’Alola",
+    "full": "Ossatueur d’Alola",
+    "sprite": "10115"
+   }
+  }
+ },
+ "110": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Smogogo de Galar",
+    "sprite": "10167"
+   }
+  }
+ },
+ "122": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "M. Mime de Galar",
+    "sprite": "10168"
+   }
+  }
+ },
+ "128": {
+  "default": "Forme normale",
+  "forms": {
+   "paldea-combat-breed": {
+    "name": "Forme de Paldéa",
+    "full": "Tauros de Paldéa Race Combative",
+    "sprite": "10250"
+   },
+   "paldea-blaze-breed": {
+    "name": "Forme de Paldéa",
+    "full": "Tauros de Paldéa Race Flamboyante",
+    "sprite": "10251"
+   },
+   "paldea-aqua-breed": {
+    "name": "Forme de Paldéa",
+    "full": "Tauros de Paldéa Race Aquatique",
+    "sprite": "10252"
+   }
+  }
+ },
+ "133": {
+  "default": "Forme normale",
+  "forms": {
+   "starter": {
+    "name": "Starter",
+    "full": "Évoli Partenaire",
+    "sprite": "10159"
+   }
+  }
+ },
+ "144": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Artikodin de Galar",
+    "sprite": "10169"
+   }
+  }
+ },
+ "145": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Électhor de Galar",
+    "sprite": "10170"
+   }
+  }
+ },
+ "146": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Sulfura de Galar",
+    "sprite": "10171"
+   }
+  }
+ },
+ "157": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Typhlosion de Hisui",
+    "sprite": "10233"
+   }
+  }
+ },
+ "172": {
+  "default": "Forme normale",
+  "forms": {
+   "spiky-eared": {
+    "name": "Troizépi",
+    "full": "Pichu Troizépi",
+    "sprite": "172-spiky-eared"
+   }
+  }
+ },
+ "194": {
+  "default": "Forme normale",
+  "forms": {
+   "paldea": {
+    "name": "Forme de Paldéa",
+    "full": "Axoloto de Paldéa",
+    "sprite": "10253"
+   }
+  }
+ },
+ "199": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Roigada de Galar",
+    "sprite": "10172"
+   }
+  }
+ },
+ "201": {
+  "default": "A",
+  "forms": {
+   "b": {
+    "name": "B",
+    "full": "Zarbi B",
+    "sprite": "201-b"
+   },
+   "c": {
+    "name": "C",
+    "full": "Zarbi C",
+    "sprite": "201-c"
+   },
+   "d": {
+    "name": "D",
+    "full": "Zarbi D",
+    "sprite": "201-d"
+   },
+   "e": {
+    "name": "E",
+    "full": "Zarbi E",
+    "sprite": "201-e"
+   },
+   "f": {
+    "name": "F",
+    "full": "Zarbi F",
+    "sprite": "201-f"
+   },
+   "g": {
+    "name": "G",
+    "full": "Zarbi G",
+    "sprite": "201-g"
+   },
+   "h": {
+    "name": "H",
+    "full": "Zarbi H",
+    "sprite": "201-h"
+   },
+   "i": {
+    "name": "I",
+    "full": "Zarbi I",
+    "sprite": "201-i"
+   },
+   "j": {
+    "name": "J",
+    "full": "Zarbi J",
+    "sprite": "201-j"
+   },
+   "k": {
+    "name": "K",
+    "full": "Zarbi K",
+    "sprite": "201-k"
+   },
+   "l": {
+    "name": "L",
+    "full": "Zarbi L",
+    "sprite": "201-l"
+   },
+   "m": {
+    "name": "M",
+    "full": "Zarbi M",
+    "sprite": "201-m"
+   },
+   "n": {
+    "name": "N",
+    "full": "Zarbi N",
+    "sprite": "201-n"
+   },
+   "o": {
+    "name": "O",
+    "full": "Zarbi O",
+    "sprite": "201-o"
+   },
+   "p": {
+    "name": "P",
+    "full": "Zarbi P",
+    "sprite": "201-p"
+   },
+   "q": {
+    "name": "Q",
+    "full": "Zarbi Q",
+    "sprite": "201-q"
+   },
+   "r": {
+    "name": "R",
+    "full": "Zarbi R",
+    "sprite": "201-r"
+   },
+   "s": {
+    "name": "S",
+    "full": "Zarbi S",
+    "sprite": "201-s"
+   },
+   "t": {
+    "name": "T",
+    "full": "Zarbi T",
+    "sprite": "201-t"
+   },
+   "u": {
+    "name": "U",
+    "full": "Zarbi U",
+    "sprite": "201-u"
+   },
+   "v": {
+    "name": "V",
+    "full": "Zarbi V",
+    "sprite": "201-v"
+   },
+   "w": {
+    "name": "W",
+    "full": "Zarbi W",
+    "sprite": "201-w"
+   },
+   "x": {
+    "name": "X",
+    "full": "Zarbi X",
+    "sprite": "201-x"
+   },
+   "y": {
+    "name": "Y",
+    "full": "Zarbi Y",
+    "sprite": "201-y"
+   },
+   "z": {
+    "name": "Z",
+    "full": "Zarbi Z",
+    "sprite": "201-z"
+   },
+   "exclamation": {
+    "name": "!",
+    "full": "Zarbi !",
+    "sprite": "201-exclamation"
+   },
+   "question": {
+    "name": "?",
+    "full": "Zarbi ?",
+    "sprite": "201-question"
+   }
+  }
+ },
+ "211": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Qwilfish de Hisui",
+    "sprite": "10234"
+   }
+  }
+ },
+ "215": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Farfuret de Hisui",
+    "sprite": "10235"
+   }
+  }
+ },
+ "222": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Corayon de Galar",
+    "sprite": "10173"
+   }
+  }
+ },
+ "263": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Zigzaton de Galar",
+    "sprite": "10174"
+   }
+  }
+ },
+ "264": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Linéon de Galar",
+    "sprite": "10175"
+   }
+  }
+ },
+ "386": {
+  "default": "Forme Normale",
+  "forms": {
+   "attack": {
+    "name": "Forme Attaque",
+    "full": "Deoxys Attaque",
+    "sprite": "10001"
+   },
+   "defense": {
+    "name": "Forme Défense",
+    "full": "Deoxys Défense",
+    "sprite": "10002"
+   },
+   "speed": {
+    "name": "Forme Vitesse",
+    "full": "Deoxys Vitesse",
+    "sprite": "10003"
+   }
+  }
+ },
+ "412": {
+  "default": "Cape Plante",
+  "forms": {
+   "sandy": {
+    "name": "Cape Sable",
+    "full": "Cheniti Sable",
+    "sprite": "412-sandy"
+   },
+   "trash": {
+    "name": "Cape Déchet",
+    "full": "Cheniti Déchet",
+    "sprite": "412-trash"
+   }
+  }
+ },
+ "413": {
+  "default": "Cape Plante",
+  "forms": {
+   "sandy": {
+    "name": "Cape Sable",
+    "full": "Cheniselle Sable",
+    "sprite": "10004"
+   },
+   "trash": {
+    "name": "Cape Déchet",
+    "full": "Cheniselle Déchet",
+    "sprite": "10005"
+   }
+  }
+ },
+ "414": {
+  "default": "Forme normale",
+  "forms": {
+   "sandy": {
+    "name": "Cape Sable",
+    "full": "Papilord Cape Sable",
+    "sprite": "414-sandy"
+   },
+   "trash": {
+    "name": "Cape Déchet",
+    "full": "Papilord Cape Déchet",
+    "sprite": "414-trash"
+   }
+  }
+ },
+ "422": {
+  "default": "Mer Occident",
+  "forms": {
+   "east": {
+    "name": "Mer Orient",
+    "full": "Sancoki Orient",
+    "sprite": "422-east"
+   }
+  }
+ },
+ "423": {
+  "default": "Mer Occident",
+  "forms": {
+   "east": {
+    "name": "Mer Orient",
+    "full": "Tritosor Orient",
+    "sprite": "423-east"
+   }
+  }
+ },
+ "479": {
+  "default": "Forme de Motisma",
+  "forms": {
+   "heat": {
+    "name": "Motisma Chaleur",
+    "full": "Motisma Chaleur",
+    "sprite": "10008"
+   },
+   "wash": {
+    "name": "Motisma Lavage",
+    "full": "Motisma Lavage",
+    "sprite": "10009"
+   },
+   "frost": {
+    "name": "Motisma Froid",
+    "full": "Motisma Froid",
+    "sprite": "10010"
+   },
+   "fan": {
+    "name": "Motisma Hélice",
+    "full": "Motisma Hélice",
+    "sprite": "10011"
+   },
+   "mow": {
+    "name": "Motisma Tonte",
+    "full": "Motisma Tonte",
+    "sprite": "10012"
+   }
+  }
+ },
+ "483": {
+  "default": "Forme normale",
+  "forms": {
+   "origin": {
+    "name": "Forme Originelle",
+    "full": "Diagla Originel",
+    "sprite": "10245"
+   }
+  }
+ },
+ "484": {
+  "default": "Forme normale",
+  "forms": {
+   "origin": {
+    "name": "Forme Originelle",
+    "full": "Palkia Originel",
+    "sprite": "10246"
+   }
+  }
+ },
+ "487": {
+  "default": "Forme Alternative",
+  "forms": {
+   "origin": {
+    "name": "Forme Originelle",
+    "full": "Giratina Originel",
+    "sprite": "10007"
+   }
+  }
+ },
+ "492": {
+  "default": "Forme Terrestre",
+  "forms": {
+   "sky": {
+    "name": "Forme Céleste",
+    "full": "Shaymin Céleste",
+    "sprite": "10006"
+   }
+  }
+ },
+ "493": {
+  "default": "Normal",
+  "forms": {
+   "bug": {
+    "name": "Insecte",
+    "full": "Arceus Insecte",
+    "sprite": "493-bug"
+   },
+   "dark": {
+    "name": "Ténèbres",
+    "full": "Arceus Ténèbres",
+    "sprite": "493-dark"
+   },
+   "dragon": {
+    "name": "Dragon",
+    "full": "Arceus Dragon",
+    "sprite": "493-dragon"
+   },
+   "electric": {
+    "name": "Électrik",
+    "full": "Arceus Électrik",
+    "sprite": "493-electric"
+   },
+   "fighting": {
+    "name": "Combat",
+    "full": "Arceus Combat",
+    "sprite": "493-fighting"
+   },
+   "fire": {
+    "name": "Feu",
+    "full": "Arceus Feu",
+    "sprite": "493-fire"
+   },
+   "flying": {
+    "name": "Vol",
+    "full": "Arceus Vol",
+    "sprite": "493-flying"
+   },
+   "ghost": {
+    "name": "Spectre",
+    "full": "Arceus Spectre",
+    "sprite": "493-ghost"
+   },
+   "grass": {
+    "name": "Plante",
+    "full": "Arceus Plante",
+    "sprite": "493-grass"
+   },
+   "ground": {
+    "name": "Sol",
+    "full": "Arceus Sol",
+    "sprite": "493-ground"
+   },
+   "ice": {
+    "name": "Glace",
+    "full": "Arceus Glace",
+    "sprite": "493-ice"
+   },
+   "poison": {
+    "name": "Poison",
+    "full": "Arceus Poison",
+    "sprite": "493-poison"
+   },
+   "psychic": {
+    "name": "Psy",
+    "full": "Arceus Psy",
+    "sprite": "493-psychic"
+   },
+   "rock": {
+    "name": "Roche",
+    "full": "Arceus Roche",
+    "sprite": "493-rock"
+   },
+   "steel": {
+    "name": "Acier",
+    "full": "Arceus Acier",
+    "sprite": "493-steel"
+   },
+   "water": {
+    "name": "Eau",
+    "full": "Arceus Eau",
+    "sprite": "493-water"
+   },
+   "unknown": {
+    "name": "???",
+    "full": "Arceus ???",
+    "sprite": "493-unknown"
+   },
+   "fairy": {
+    "name": "Fée",
+    "full": "Arceus Fée",
+    "sprite": "493-fairy"
+   }
+  }
+ },
+ "503": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Clamiral de Hisui",
+    "sprite": "10236"
+   }
+  }
+ },
+ "549": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Fragilady de Hisui",
+    "sprite": "10237"
+   }
+  }
+ },
+ "550": {
+  "default": "Motif Rouge",
+  "forms": {
+   "blue-striped": {
+    "name": "Motif Bleu",
+    "full": "Bargantua Bleu",
+    "sprite": "10016"
+   },
+   "white-striped": {
+    "name": "Motif Blanc",
+    "full": "Bargantua Blanc",
+    "sprite": "10247"
+   }
+  }
+ },
+ "554": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Darumarond de Galar",
+    "sprite": "10176"
+   }
+  }
+ },
+ "555": {
+  "default": "Mode Normal",
+  "forms": {
+   "galar-standard": {
+    "name": "Forme de Galar",
+    "full": "Darumacho de Galar Normal",
+    "sprite": "10177"
+   }
+  }
+ },
+ "562": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Tutafeh de Galar",
+    "sprite": "10179"
+   }
+  }
+ },
+ "570": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Zorua de Hisui",
+    "sprite": "10238"
+   }
+  }
+ },
+ "571": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Zoroark de Hisui",
+    "sprite": "10239"
+   }
+  }
+ },
+ "585": {
+  "default": "Forme Printemps",
+  "forms": {
+   "summer": {
+    "name": "Forme Été",
+    "full": "Vivaldaim Été",
+    "sprite": "585-summer"
+   },
+   "autumn": {
+    "name": "Forme Automne",
+    "full": "Vivaldaim Automne",
+    "sprite": "585-autumn"
+   },
+   "winter": {
+    "name": "Forme Hiver",
+    "full": "Vivaldaim Hiver",
+    "sprite": "585-winter"
+   }
+  }
+ },
+ "586": {
+  "default": "Forme Printemps",
+  "forms": {
+   "summer": {
+    "name": "Forme Été",
+    "full": "Haydaim Été",
+    "sprite": "586-summer"
+   },
+   "autumn": {
+    "name": "Forme Automne",
+    "full": "Haydaim Automne",
+    "sprite": "586-autumn"
+   },
+   "winter": {
+    "name": "Forme Hiver",
+    "full": "Haydaim Hiver",
+    "sprite": "586-winter"
+   }
+  }
+ },
+ "592": {
+  "default": "Mâle",
+  "forms": {
+   "female": {
+    "name": "Femelle",
+    "full": "Viskuse Femelle",
+    "sprite": "592-female"
+   }
+  }
+ },
+ "593": {
+  "default": "Mâle",
+  "forms": {
+   "female": {
+    "name": "Femelle",
+    "full": "Moyade Femelle",
+    "sprite": "593-female"
+   }
+  }
+ },
+ "618": {
+  "default": "Forme normale",
+  "forms": {
+   "galar": {
+    "name": "Forme de Galar",
+    "full": "Limonde de Galar",
+    "sprite": "10180"
+   }
+  }
+ },
+ "628": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Gueriaigle de Hisui",
+    "sprite": "10240"
+   }
+  }
+ },
+ "641": {
+  "default": "Forme Avatar",
+  "forms": {
+   "therian": {
+    "name": "Forme Totémique",
+    "full": "Boréas Totémique",
+    "sprite": "10019"
+   }
+  }
+ },
+ "642": {
+  "default": "Forme Avatar",
+  "forms": {
+   "therian": {
+    "name": "Forme Totémique",
+    "full": "Fulguris Totémique",
+    "sprite": "10020"
+   }
+  }
+ },
+ "645": {
+  "default": "Forme Avatar",
+  "forms": {
+   "therian": {
+    "name": "Forme Totémique",
+    "full": "Démétéros Totémique",
+    "sprite": "10021"
+   }
+  }
+ },
+ "646": {
+  "default": "Forme de Kyurem",
+  "forms": {
+   "black": {
+    "name": "Kyurem Noir",
+    "full": "Kyurem Noir",
+    "sprite": "10022"
+   },
+   "white": {
+    "name": "Kyurem Blanc",
+    "full": "Kyurem Blanc",
+    "sprite": "10023"
+   }
+  }
+ },
+ "647": {
+  "default": "Aspect Normal",
+  "forms": {
+   "resolute": {
+    "name": "Aspect Décidé",
+    "full": "Keldeo Décidé",
+    "sprite": "10024"
+   }
+  }
+ },
+ "649": {
+  "default": "Forme normale",
+  "forms": {
+   "douse": {
+    "name": "Module Aqua",
+    "full": "Genesect Aqua",
+    "sprite": "649-douse"
+   },
+   "shock": {
+    "name": "Module Choc",
+    "full": "Genesect Choc",
+    "sprite": "649-shock"
+   },
+   "burn": {
+    "name": "Module Pyro",
+    "full": "Genesect Pyro",
+    "sprite": "649-burn"
+   },
+   "chill": {
+    "name": "Module Cryo",
+    "full": "Genesect Cryo",
+    "sprite": "649-chill"
+   }
+  }
+ },
+ "658": {
+  "default": "Forme normale",
+  "forms": {
+   "battle-bond": {
+    "name": "Battle Bond",
+    "full": "Amphinobi Synergie",
+    "sprite": "10116"
+   }
+  }
+ },
+ "664": {
+  "default": "Forme normale",
+  "forms": {
+   "polar": {
+    "name": "Motif Banquise",
+    "full": "Lépidonille Motif Banquise",
+    "sprite": "664-polar"
+   },
+   "tundra": {
+    "name": "Motif Glace",
+    "full": "Lépidonille Motif Glace",
+    "sprite": "664-tundra"
+   },
+   "continental": {
+    "name": "Motif Continent",
+    "full": "Lépidonille Motif Continent",
+    "sprite": "664-continental"
+   },
+   "garden": {
+    "name": "Motif Verdure",
+    "full": "Lépidonille Motif Verdure",
+    "sprite": "664-garden"
+   },
+   "elegant": {
+    "name": "Motif Monarchie",
+    "full": "Lépidonille Motif Monarchie",
+    "sprite": "664-elegant"
+   },
+   "meadow": {
+    "name": "Motif Floraison",
+    "full": "Lépidonille Motif Floraison",
+    "sprite": "664-meadow"
+   },
+   "modern": {
+    "name": "Motif Métropole",
+    "full": "Lépidonille Motif Métropole",
+    "sprite": "664-modern"
+   },
+   "marine": {
+    "name": "Motif Rivage",
+    "full": "Lépidonille Motif Rivage",
+    "sprite": "664-marine"
+   },
+   "archipelago": {
+    "name": "Motif Archipel",
+    "full": "Lépidonille Motif Archipel",
+    "sprite": "664-archipelago"
+   },
+   "high-plains": {
+    "name": "Motif Sécheresse",
+    "full": "Lépidonille Motif Sécheresse",
+    "sprite": "664-high-plains"
+   },
+   "sandstorm": {
+    "name": "Motif Sable",
+    "full": "Lépidonille Motif Sable",
+    "sprite": "664-sandstorm"
+   },
+   "river": {
+    "name": "Motif Delta",
+    "full": "Lépidonille Motif Delta",
+    "sprite": "664-river"
+   },
+   "monsoon": {
+    "name": "Motif Cyclone",
+    "full": "Lépidonille Motif Cyclone",
+    "sprite": "664-monsoon"
+   },
+   "savanna": {
+    "name": "Motif Mangrove",
+    "full": "Lépidonille Motif Mangrove",
+    "sprite": "664-savanna"
+   },
+   "sun": {
+    "name": "Motif Zénith",
+    "full": "Lépidonille Motif Zénith",
+    "sprite": "664-sun"
+   },
+   "ocean": {
+    "name": "Motif Soleil Levant",
+    "full": "Lépidonille Motif Soleil Levant",
+    "sprite": "664-ocean"
+   },
+   "jungle": {
+    "name": "Motif Jungle",
+    "full": "Lépidonille Motif Jungle",
+    "sprite": "664-jungle"
+   },
+   "fancy": {
+    "name": "Motif Fantaisie",
+    "full": "Lépidonille Motif Fantaisie",
+    "sprite": "664-fancy"
+   },
+   "poke-ball": {
+    "name": "Motif Poké Ball",
+    "full": "Lépidonille Motif Poké Ball",
+    "sprite": "664-poke-ball"
+   }
+  }
+ },
+ "665": {
+  "default": "Forme normale",
+  "forms": {
+   "polar": {
+    "name": "Motif Banquise",
+    "full": "Pérégrain Motif Banquise",
+    "sprite": "665-polar"
+   },
+   "tundra": {
+    "name": "Motif Glace",
+    "full": "Pérégrain Motif Glace",
+    "sprite": "665-tundra"
+   },
+   "continental": {
+    "name": "Motif Continent",
+    "full": "Pérégrain Motif Continent",
+    "sprite": "665-continental"
+   },
+   "garden": {
+    "name": "Motif Verdure",
+    "full": "Pérégrain Motif Verdure",
+    "sprite": "665-garden"
+   },
+   "elegant": {
+    "name": "Motif Monarchie",
+    "full": "Pérégrain Motif Monarchie",
+    "sprite": "665-elegant"
+   },
+   "meadow": {
+    "name": "Motif Floraison",
+    "full": "Pérégrain Motif Floraison",
+    "sprite": "665-meadow"
+   },
+   "modern": {
+    "name": "Motif Métropole",
+    "full": "Pérégrain Motif Métropole",
+    "sprite": "665-modern"
+   },
+   "marine": {
+    "name": "Motif Rivage",
+    "full": "Pérégrain Motif Rivage",
+    "sprite": "665-marine"
+   },
+   "archipelago": {
+    "name": "Motif Archipel",
+    "full": "Pérégrain Motif Archipel",
+    "sprite": "665-archipelago"
+   },
+   "high-plains": {
+    "name": "Motif Sécheresse",
+    "full": "Pérégrain Motif Sécheresse",
+    "sprite": "665-high-plains"
+   },
+   "sandstorm": {
+    "name": "Motif Sable",
+    "full": "Pérégrain Motif Sable",
+    "sprite": "665-sandstorm"
+   },
+   "river": {
+    "name": "Motif Delta",
+    "full": "Pérégrain Motif Delta",
+    "sprite": "665-river"
+   },
+   "monsoon": {
+    "name": "Motif Cyclone",
+    "full": "Pérégrain Motif Cyclone",
+    "sprite": "665-monsoon"
+   },
+   "savanna": {
+    "name": "Motif Mangrove",
+    "full": "Pérégrain Motif Mangrove",
+    "sprite": "665-savanna"
+   },
+   "sun": {
+    "name": "Motif Zénith",
+    "full": "Pérégrain Motif Zénith",
+    "sprite": "665-sun"
+   },
+   "ocean": {
+    "name": "Motif Soleil Levant",
+    "full": "Pérégrain Motif Soleil Levant",
+    "sprite": "665-ocean"
+   },
+   "jungle": {
+    "name": "Motif Jungle",
+    "full": "Pérégrain Motif Jungle",
+    "sprite": "665-jungle"
+   },
+   "fancy": {
+    "name": "Motif Fantaisie",
+    "full": "Pérégrain Motif Fantaisie",
+    "sprite": "665-fancy"
+   },
+   "poke-ball": {
+    "name": "Motif Poké Ball",
+    "full": "Pérégrain Motif Poké Ball",
+    "sprite": "665-poke-ball"
+   }
+  }
+ },
+ "666": {
+  "default": "Motif Floraison",
+  "forms": {
+   "icy-snow": {
+    "name": "Motif Blizzard",
+    "full": "Prismillon Blizzard",
+    "sprite": "666-icy-snow"
+   },
+   "polar": {
+    "name": "Motif Banquise",
+    "full": "Prismillon Banquise",
+    "sprite": "666-polar"
+   },
+   "tundra": {
+    "name": "Motif Glace",
+    "full": "Prismillon Glace",
+    "sprite": "666-tundra"
+   },
+   "continental": {
+    "name": "Motif Continent",
+    "full": "Prismillon Continent",
+    "sprite": "666-continental"
+   },
+   "garden": {
+    "name": "Motif Verdure",
+    "full": "Prismillon Verdure",
+    "sprite": "666-garden"
+   },
+   "elegant": {
+    "name": "Motif Monarchie",
+    "full": "Prismillon Monarchie",
+    "sprite": "666-elegant"
+   },
+   "modern": {
+    "name": "Motif Métropole",
+    "full": "Prismillon Métropole",
+    "sprite": "666-modern"
+   },
+   "marine": {
+    "name": "Motif Rivage",
+    "full": "Prismillon Rivage",
+    "sprite": "666-marine"
+   },
+   "archipelago": {
+    "name": "Motif Archipel",
+    "full": "Prismillon Archipel",
+    "sprite": "666-archipelago"
+   },
+   "high-plains": {
+    "name": "Motif Sécheresse",
+    "full": "Prismillon Sécheresse",
+    "sprite": "666-high-plains"
+   },
+   "sandstorm": {
+    "name": "Motif Sable",
+    "full": "Prismillon Sable",
+    "sprite": "666-sandstorm"
+   },
+   "river": {
+    "name": "Motif Delta",
+    "full": "Prismillon Delta",
+    "sprite": "666-river"
+   },
+   "monsoon": {
+    "name": "Motif Cyclone",
+    "full": "Prismillon Cyclone",
+    "sprite": "666-monsoon"
+   },
+   "savanna": {
+    "name": "Motif Mangrove",
+    "full": "Prismillon Mangrove",
+    "sprite": "666-savanna"
+   },
+   "sun": {
+    "name": "Motif Zénith",
+    "full": "Prismillon Zénith",
+    "sprite": "666-sun"
+   },
+   "ocean": {
+    "name": "Motif Soleil Levant",
+    "full": "Prismillon Soleil Levant",
+    "sprite": "666-ocean"
+   },
+   "jungle": {
+    "name": "Motif Jungle",
+    "full": "Prismillon Jungle",
+    "sprite": "666-jungle"
+   },
+   "fancy": {
+    "name": "Motif Fantaisie",
+    "full": "Prismillon Fantaisie",
+    "sprite": "666-fancy"
+   },
+   "poke-ball": {
+    "name": "Motif Poké Ball",
+    "full": "Prismillon Poké Ball",
+    "sprite": "666-poke-ball"
+   }
+  }
+ },
+ "668": {
+  "default": "Mâle",
+  "forms": {
+   "female": {
+    "name": "Femelle",
+    "full": "Némélios Femelle",
+    "sprite": "668-female"
+   }
+  }
+ },
+ "669": {
+  "default": "Fleur Rouge",
+  "forms": {
+   "yellow": {
+    "name": "Fleur Jaune",
+    "full": "Flabébé Jaune",
+    "sprite": "669-yellow"
+   },
+   "orange": {
+    "name": "Fleur Orange",
+    "full": "Flabébé Orange",
+    "sprite": "669-orange"
+   },
+   "blue": {
+    "name": "Fleur Bleue",
+    "full": "Flabébé Bleu",
+    "sprite": "669-blue"
+   },
+   "white": {
+    "name": "Fleur Blanche",
+    "full": "Flabébé Blanc",
+    "sprite": "669-white"
+   }
+  }
+ },
+ "670": {
+  "default": "Fleur Rouge",
+  "forms": {
+   "yellow": {
+    "name": "Fleur Jaune",
+    "full": "Floette Jaune",
+    "sprite": "670-yellow"
+   },
+   "orange": {
+    "name": "Fleur Orange",
+    "full": "Floette Orange",
+    "sprite": "670-orange"
+   },
+   "blue": {
+    "name": "Fleur Bleue",
+    "full": "Floette Bleu",
+    "sprite": "670-blue"
+   },
+   "white": {
+    "name": "Fleur Blanche",
+    "full": "Floette Blanc",
+    "sprite": "670-white"
+   },
+   "eternal": {
+    "name": "Fleur Éternelle",
+    "full": "Floette Éternel",
+    "sprite": "10061"
+   }
+  }
+ },
+ "671": {
+  "default": "Fleur Rouge",
+  "forms": {
+   "yellow": {
+    "name": "Fleur Jaune",
+    "full": "Florges Jaune",
+    "sprite": "671-yellow"
+   },
+   "orange": {
+    "name": "Fleur Orange",
+    "full": "Florges Orange",
+    "sprite": "671-orange"
+   },
+   "blue": {
+    "name": "Fleur Bleue",
+    "full": "Florges Bleu",
+    "sprite": "671-blue"
+   },
+   "white": {
+    "name": "Fleur Blanche",
+    "full": "Florges Blanc",
+    "sprite": "671-white"
+   }
+  }
+ },
+ "676": {
+  "default": "Forme Sauvage",
+  "forms": {
+   "heart": {
+    "name": "Coupe Cœur",
+    "full": "Couafarel Cœur",
+    "sprite": "676-heart"
+   },
+   "star": {
+    "name": "Coupe Étoile",
+    "full": "Couafarel Étoile",
+    "sprite": "676-star"
+   },
+   "diamond": {
+    "name": "Coupe Diamant",
+    "full": "Couafarel Diamant",
+    "sprite": "676-diamond"
+   },
+   "debutante": {
+    "name": "Coupe Demoiselle",
+    "full": "Couafarel Demoiselle",
+    "sprite": "676-debutante"
+   },
+   "matron": {
+    "name": "Coupe Madame",
+    "full": "Couafarel Madame",
+    "sprite": "676-matron"
+   },
+   "dandy": {
+    "name": "Coupe Monsieur",
+    "full": "Couafarel Monsieur",
+    "sprite": "676-dandy"
+   },
+   "la-reine": {
+    "name": "Coupe Reine",
+    "full": "Couafarel Reine",
+    "sprite": "676-la-reine"
+   },
+   "kabuki": {
+    "name": "Coupe Kabuki",
+    "full": "Couafarel Kabuki",
+    "sprite": "676-kabuki"
+   },
+   "pharaoh": {
+    "name": "Coupe Pharaon",
+    "full": "Couafarel Pharaon",
+    "sprite": "676-pharaoh"
+   }
+  }
+ },
+ "678": {
+  "default": "Mâle",
+  "forms": {
+   "female": {
+    "name": "Femelle",
+    "full": "Mistigrix Femelle",
+    "sprite": "10025"
+   }
+  }
+ },
+ "705": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Colimucus de Hisui",
+    "sprite": "10241"
+   }
+  }
+ },
+ "706": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Muplodocus de Hisui",
+    "sprite": "10242"
+   }
+  }
+ },
+ "710": {
+  "default": "Taille Normale",
+  "forms": {
+   "small": {
+    "name": "Taille Mini",
+    "full": "Pitrouille Mini",
+    "sprite": "10027"
+   },
+   "large": {
+    "name": "Taille Maxi",
+    "full": "Pitrouille Maxi",
+    "sprite": "10028"
+   },
+   "super": {
+    "name": "Taille Ultra",
+    "full": "Pitrouille Ultra",
+    "sprite": "10029"
+   }
+  }
+ },
+ "711": {
+  "default": "Taille Normale",
+  "forms": {
+   "small": {
+    "name": "Taille Mini",
+    "full": "Banshitrouye Mini",
+    "sprite": "10030"
+   },
+   "large": {
+    "name": "Taille Maxi",
+    "full": "Banshitrouye Maxi",
+    "sprite": "10031"
+   },
+   "super": {
+    "name": "Taille Ultra",
+    "full": "Banshitrouye Ultra",
+    "sprite": "10032"
+   }
+  }
+ },
+ "713": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Séracrawl de Hisui",
+    "sprite": "10243"
+   }
+  }
+ },
+ "718": {
+  "default": "Forme 50 %",
+  "forms": {
+   "10-power-construct": {
+    "name": "Forme 10 %",
+    "full": "Zygarde Forme 10 %",
+    "sprite": "10118"
+   },
+   "50-power-construct": {
+    "name": "Forme 50 %",
+    "full": "Zygarde Forme 50 %",
+    "sprite": "10119"
+   },
+   "10": {
+    "name": "Forme 10 %",
+    "full": "Zygarde Forme 10 %",
+    "sprite": "10181"
+   }
+  }
+ },
+ "720": {
+  "default": "Hoopa Enchaîné",
+  "forms": {
+   "unbound": {
+    "name": "Hoopa Déchaîné",
+    "full": "Hoopa Déchaîné",
+    "sprite": "10086"
+   }
+  }
+ },
+ "724": {
+  "default": "Forme normale",
+  "forms": {
+   "hisui": {
+    "name": "Forme de Hisui",
+    "full": "Archéduc de Hisui",
+    "sprite": "10244"
+   }
+  }
+ },
+ "741": {
+  "default": "Style Flamenco",
+  "forms": {
+   "pom-pom": {
+    "name": "Style Pom-Pom",
+    "full": "Plumeline Style Pom-Pom",
+    "sprite": "10123"
+   },
+   "pau": {
+    "name": "Style Hula",
+    "full": "Plumeline Style Hula",
+    "sprite": "10124"
+   },
+   "sensu": {
+    "name": "Style Buyō",
+    "full": "Plumeline Style Buyō",
+    "sprite": "10125"
+   }
+  }
+ },
+ "744": {
+  "default": "Forme normale",
+  "forms": {
+   "own-tempo": {
+    "name": "Own Tempo",
+    "full": "Rocabot Tempo Perso",
+    "sprite": "10151"
+   }
+  }
+ },
+ "745": {
+  "default": "Forme Diurne",
+  "forms": {
+   "midnight": {
+    "name": "Forme Nocturne",
+    "full": "Lougaroc Forme Nocturne",
+    "sprite": "10126"
+   },
+   "dusk": {
+    "name": "Forme Crépusculaire",
+    "full": "Lougaroc Forme Crépusculaire",
+    "sprite": "10152"
+   }
+  }
+ },
+ "773": {
+  "default": "Type : Normal",
+  "forms": {
+   "fighting": {
+    "name": "Type : Combat",
+    "full": "Silvallié Type : Combat",
+    "sprite": "773-fighting"
+   },
+   "flying": {
+    "name": "Type : Vol",
+    "full": "Silvallié Type : Vol",
+    "sprite": "773-flying"
+   },
+   "poison": {
+    "name": "Type : Poison",
+    "full": "Silvallié Type : Poison",
+    "sprite": "773-poison"
+   },
+   "ground": {
+    "name": "Type : Sol",
+    "full": "Silvallié Type : Sol",
+    "sprite": "773-ground"
+   },
+   "rock": {
+    "name": "Type : Roche",
+    "full": "Silvallié Type : Roche",
+    "sprite": "773-rock"
+   },
+   "bug": {
+    "name": "Type : Insecte",
+    "full": "Silvallié Type : Insecte",
+    "sprite": "773-bug"
+   },
+   "ghost": {
+    "name": "Type : Spectre",
+    "full": "Silvallié Type : Spectre",
+    "sprite": "773-ghost"
+   },
+   "steel": {
+    "name": "Type : Acier",
+    "full": "Silvallié Type : Acier",
+    "sprite": "773-steel"
+   },
+   "fire": {
+    "name": "Type : Feu",
+    "full": "Silvallié Type : Feu",
+    "sprite": "773-fire"
+   },
+   "water": {
+    "name": "Type : Eau",
+    "full": "Silvallié Type : Eau",
+    "sprite": "773-water"
+   },
+   "grass": {
+    "name": "Type : Plante",
+    "full": "Silvallié Type : Plante",
+    "sprite": "773-grass"
+   },
+   "electric": {
+    "name": "Type : Électrik",
+    "full": "Silvallié Type : Électrik",
+    "sprite": "773-electric"
+   },
+   "psychic": {
+    "name": "Type : Psy",
+    "full": "Silvallié Type : Psy",
+    "sprite": "773-psychic"
+   },
+   "ice": {
+    "name": "Type : Glace",
+    "full": "Silvallié Type : Glace",
+    "sprite": "773-ice"
+   },
+   "dragon": {
+    "name": "Type : Dragon",
+    "full": "Silvallié Type : Dragon",
+    "sprite": "773-dragon"
+   },
+   "dark": {
+    "name": "Type : Ténèbres",
+    "full": "Silvallié Type : Ténèbres",
+    "sprite": "773-dark"
+   },
+   "fairy": {
+    "name": "Type : Fée",
+    "full": "Silvallié Type : Fée",
+    "sprite": "773-fairy"
+   }
+  }
+ },
+ "774": {
+  "default": "Forme Météore",
+  "forms": {
+   "orange-meteor": {
+    "name": "Forme Météore",
+    "full": "Météno Forme Météore Noyeau Orange",
+    "sprite": "10130"
+   },
+   "yellow-meteor": {
+    "name": "Forme Météore",
+    "full": "Météno Forme Météore Noyeau Jaune",
+    "sprite": "10131"
+   },
+   "green-meteor": {
+    "name": "Forme Météore",
+    "full": "Météno Forme Météore Noyeau Vert",
+    "sprite": "10132"
+   },
+   "blue-meteor": {
+    "name": "Forme Météore",
+    "full": "Météno Forme Météore Noyeau Bleu",
+    "sprite": "10133"
+   },
+   "indigo-meteor": {
+    "name": "Forme Météore",
+    "full": "Météno Forme Météore Noyeau Indigo",
+    "sprite": "10134"
+   },
+   "violet-meteor": {
+    "name": "Forme Météore",
+    "full": "Météno Forme Météore Noyeau Violet",
+    "sprite": "10135"
+   },
+   "red": {
+    "name": "Noyau Rouge",
+    "full": "Météno Noyeau Rouge",
+    "sprite": "10136"
+   },
+   "orange": {
+    "name": "Noyau Orange",
+    "full": "Météno Noyeau Orange",
+    "sprite": "10137"
+   },
+   "yellow": {
+    "name": "Noyau Jaune",
+    "full": "Météno Noyeau Jaune",
+    "sprite": "10138"
+   },
+   "green": {
+    "name": "Noyau Vert",
+    "full": "Météno Noyeau Vert",
+    "sprite": "10139"
+   },
+   "blue": {
+    "name": "Noyau Bleu",
+    "full": "Météno Noyeau Bleu",
+    "sprite": "10140"
+   },
+   "indigo": {
+    "name": "Noyau Indigo",
+    "full": "Météno Noyeau Indigo",
+    "sprite": "10141"
+   },
+   "violet": {
+    "name": "Noyau Violet",
+    "full": "Météno Noyeau Violet",
+    "sprite": "10142"
+   }
+  }
+ },
+ "800": {
+  "default": "Forme normale",
+  "forms": {
+   "dusk": {
+    "name": "Crinière du Couchant",
+    "full": "Necrozma Crinière du Couchant",
+    "sprite": "10155"
+   },
+   "dawn": {
+    "name": "Ailes de l’Aurore",
+    "full": "Necrozma Ailes de l’Aurore",
+    "sprite": "10156"
+   }
+  }
+ },
+ "801": {
+  "default": "Forme normale",
+  "forms": {
+   "original": {
+    "name": "Couleur du Passé",
+    "full": "Magearna Couleur du Passé",
+    "sprite": "10147"
+   }
+  }
+ },
+ "849": {
+  "default": "Forme Aigüe",
+  "forms": {
+   "low-key": {
+    "name": "Forme Grave",
+    "full": "Salarsen Forme Grave",
+    "sprite": "10184"
+   }
+  }
+ },
+ "854": {
+  "default": "Forme Contrefaçon",
+  "forms": {
+   "antique": {
+    "name": "Forme Authentique",
+    "full": "Théffroi Authentique",
+    "sprite": "854-antique"
+   }
+  }
+ },
+ "855": {
+  "default": "Forme Contrefaçon",
+  "forms": {
+   "antique": {
+    "name": "Forme Authentique",
+    "full": "Polthégeist Authentique",
+    "sprite": "855-antique"
+   }
+  }
+ },
+ "869": {
+  "default": "Lait Vanille Fraise en Sucre",
+  "forms": {
+   "ruby-cream-strawberry-sweet": {
+    "name": "Lait Ruby Fraise en Sucre",
+    "full": "Charmilly Lait Ruby Fraise en Sucre",
+    "sprite": "869-ruby-cream-strawberry-sweet"
+   },
+   "matcha-cream-strawberry-sweet": {
+    "name": "Lait Matcha Fraise en Sucre",
+    "full": "Charmilly Lait Matcha Fraise en Sucre",
+    "sprite": "869-matcha-cream-strawberry-sweet"
+   },
+   "mint-cream-strawberry-sweet": {
+    "name": "Lait Menthe Fraise en Sucre",
+    "full": "Charmilly Lait Menthe Fraise en Sucre",
+    "sprite": "869-mint-cream-strawberry-sweet"
+   },
+   "lemon-cream-strawberry-sweet": {
+    "name": "Lait Citron Fraise en Sucre",
+    "full": "Charmilly Lait Citron Fraise en Sucre",
+    "sprite": "869-lemon-cream-strawberry-sweet"
+   },
+   "salted-cream-strawberry-sweet": {
+    "name": "Lait Salé Fraise en Sucre",
+    "full": "Charmilly Lait Salé Fraise en Sucre",
+    "sprite": "869-salted-cream-strawberry-sweet"
+   },
+   "ruby-swirl-strawberry-sweet": {
+    "name": "Mélange Ruby Fraise en Sucre",
+    "full": "Charmilly Mélange Ruby Fraise en Sucre",
+    "sprite": "869-ruby-swirl-strawberry-sweet"
+   },
+   "caramel-swirl-strawberry-sweet": {
+    "name": "Mélange Caramel Fraise en Sucre",
+    "full": "Charmilly Mélange Caramel Fraise en Sucre",
+    "sprite": "869-caramel-swirl-strawberry-sweet"
+   },
+   "rainbow-swirl-strawberry-sweet": {
+    "name": "Mélange Tricolore Fraise en Sucre",
+    "full": "Charmilly Mélange Tricolore Fraise en Sucre",
+    "sprite": "869-rainbow-swirl-strawberry-sweet"
+   },
+   "vanilla-cream-berry-sweet": {
+    "name": "Lait Vanille Baie en Sucre",
+    "full": "Charmilly Lait Vanille Baie en Sucre",
+    "sprite": "869-vanilla-cream-berry-sweet"
+   },
+   "ruby-cream-berry-sweet": {
+    "name": "Lait Ruby Baie en Sucre",
+    "full": "Charmilly Lait Ruby Baie en Sucre",
+    "sprite": "869-ruby-cream-berry-sweet"
+   },
+   "matcha-cream-berry-sweet": {
+    "name": "Lait Matcha Baie en Sucre",
+    "full": "Charmilly Lait Matcha Baie en Sucre",
+    "sprite": "869-matcha-cream-berry-sweet"
+   },
+   "mint-cream-berry-sweet": {
+    "name": "Lait Menthe Baie en Sucre",
+    "full": "Charmilly Lait Menthe Baie en Sucre",
+    "sprite": "869-mint-cream-berry-sweet"
+   },
+   "lemon-cream-berry-sweet": {
+    "name": "Lait Citron Baie en Sucre",
+    "full": "Charmilly Lait Citron Baie en Sucre",
+    "sprite": "869-lemon-cream-berry-sweet"
+   },
+   "salted-cream-berry-sweet": {
+    "name": "Lait Salé Baie en Sucre",
+    "full": "Charmilly Lait Salé Baie en Sucre",
+    "sprite": "869-salted-cream-berry-sweet"
+   },
+   "ruby-swirl-berry-sweet": {
+    "name": "Mélange Ruby Baie en Sucre",
+    "full": "Charmilly Mélange Ruby Baie en Sucre",
+    "sprite": "869-ruby-swirl-berry-sweet"
+   },
+   "caramel-swirl-berry-sweet": {
+    "name": "Mélange Caramel Baie en Sucre",
+    "full": "Charmilly Mélange Caramel Baie en Sucre",
+    "sprite": "869-caramel-swirl-berry-sweet"
+   },
+   "rainbow-swirl-berry-sweet": {
+    "name": "Mélange Tricolore Baie en Sucre",
+    "full": "Charmilly Mélange Tricolore Baie en Sucre",
+    "sprite": "869-rainbow-swirl-berry-sweet"
+   },
+   "vanilla-cream-love-sweet": {
+    "name": "Lait Vanille Cœur en Sucre",
+    "full": "Charmilly Lait Vanille Cœur en Sucre",
+    "sprite": "869-vanilla-cream-love-sweet"
+   },
+   "ruby-cream-love-sweet": {
+    "name": "Lait Ruby Cœur en Sucre",
+    "full": "Charmilly Lait Ruby Cœur en Sucre",
+    "sprite": "869-ruby-cream-love-sweet"
+   },
+   "matcha-cream-love-sweet": {
+    "name": "Lait Matcha Cœur en Sucre",
+    "full": "Charmilly Lait Matcha Cœur en Sucre",
+    "sprite": "869-matcha-cream-love-sweet"
+   },
+   "mint-cream-love-sweet": {
+    "name": "Lait Menthe Cœur en Sucre",
+    "full": "Charmilly Lait Menthe Cœur en Sucre",
+    "sprite": "869-mint-cream-love-sweet"
+   },
+   "lemon-cream-love-sweet": {
+    "name": "Lait Citron Cœur en Sucre",
+    "full": "Charmilly Lait Citron Cœur en Sucre",
+    "sprite": "869-lemon-cream-love-sweet"
+   },
+   "salted-cream-love-sweet": {
+    "name": "Lait Salé Cœur en Sucre",
+    "full": "Charmilly Lait Salé Cœur en Sucre",
+    "sprite": "869-salted-cream-love-sweet"
+   },
+   "ruby-swirl-love-sweet": {
+    "name": "Mélange Ruby Cœur en Sucre",
+    "full": "Charmilly Mélange Ruby Cœur en Sucre",
+    "sprite": "869-ruby-swirl-love-sweet"
+   },
+   "caramel-swirl-love-sweet": {
+    "name": "Mélange Caramel Cœur en Sucre",
+    "full": "Charmilly Mélange Caramel Cœur en Sucre",
+    "sprite": "869-caramel-swirl-love-sweet"
+   },
+   "rainbow-swirl-love-sweet": {
+    "name": "Mélange Tricolore Cœur en Sucre",
+    "full": "Charmilly Mélange Tricolore Cœur en Sucre",
+    "sprite": "869-rainbow-swirl-love-sweet"
+   },
+   "vanilla-cream-star-sweet": {
+    "name": "Lait Vanille Étoile en Sucre",
+    "full": "Charmilly Lait Vanille Étoile en Sucre",
+    "sprite": "869-vanilla-cream-star-sweet"
+   },
+   "ruby-cream-star-sweet": {
+    "name": "Lait Ruby Étoile en Sucre",
+    "full": "Charmilly Lait Ruby Étoile en Sucre",
+    "sprite": "869-ruby-cream-star-sweet"
+   },
+   "matcha-cream-star-sweet": {
+    "name": "Lait Matcha Étoile en Sucre",
+    "full": "Charmilly Lait Matcha Étoile en Sucre",
+    "sprite": "869-matcha-cream-star-sweet"
+   },
+   "mint-cream-star-sweet": {
+    "name": "Lait Menthe Étoile en Sucre",
+    "full": "Charmilly Lait Menthe Étoile en Sucre",
+    "sprite": "869-mint-cream-star-sweet"
+   },
+   "lemon-cream-star-sweet": {
+    "name": "Lait Citron Étoile en Sucre",
+    "full": "Charmilly Lait Citron Étoile en Sucre",
+    "sprite": "869-lemon-cream-star-sweet"
+   },
+   "salted-cream-star-sweet": {
+    "name": "Lait Salé Étoile en Sucre",
+    "full": "Charmilly Lait Salé Étoile en Sucre",
+    "sprite": "869-salted-cream-star-sweet"
+   },
+   "ruby-swirl-star-sweet": {
+    "name": "Mélange Ruby Étoile en Sucre",
+    "full": "Charmilly Mélange Ruby Étoile en Sucre",
+    "sprite": "869-ruby-swirl-star-sweet"
+   },
+   "caramel-swirl-star-sweet": {
+    "name": "Mélange Caramel Étoile en Sucre",
+    "full": "Charmilly Mélange Caramel Étoile en Sucre",
+    "sprite": "869-caramel-swirl-star-sweet"
+   },
+   "rainbow-swirl-star-sweet": {
+    "name": "Mélange Tricolore Étoile en Sucre",
+    "full": "Charmilly Mélange Tricolore Étoile en Sucre",
+    "sprite": "869-rainbow-swirl-star-sweet"
+   },
+   "vanilla-cream-clover-sweet": {
+    "name": "Lait Vanille Trèfle en Sucre",
+    "full": "Charmilly Lait Vanille Trèfle en Sucre",
+    "sprite": "869-vanilla-cream-clover-sweet"
+   },
+   "ruby-cream-clover-sweet": {
+    "name": "Lait Ruby Trèfle en Sucre",
+    "full": "Charmilly Lait Ruby Trèfle en Sucre",
+    "sprite": "869-ruby-cream-clover-sweet"
+   },
+   "matcha-cream-clover-sweet": {
+    "name": "Lait Matcha Trèfle en Sucre",
+    "full": "Charmilly Lait Matcha Trèfle en Sucre",
+    "sprite": "869-matcha-cream-clover-sweet"
+   },
+   "mint-cream-clover-sweet": {
+    "name": "Lait Menthe Trèfle en Sucre",
+    "full": "Charmilly Lait Menthe Trèfle en Sucre",
+    "sprite": "869-mint-cream-clover-sweet"
+   },
+   "lemon-cream-clover-sweet": {
+    "name": "Lait Citron Trèfle en Sucre",
+    "full": "Charmilly Lait Citron Trèfle en Sucre",
+    "sprite": "869-lemon-cream-clover-sweet"
+   },
+   "salted-cream-clover-sweet": {
+    "name": "Lait Salé Trèfle en Sucre",
+    "full": "Charmilly Lait Salé Trèfle en Sucre",
+    "sprite": "869-salted-cream-clover-sweet"
+   },
+   "ruby-swirl-clover-sweet": {
+    "name": "Mélange Ruby Trèfle en Sucre",
+    "full": "Charmilly Mélange Ruby Trèfle en Sucre",
+    "sprite": "869-ruby-swirl-clover-sweet"
+   },
+   "caramel-swirl-clover-sweet": {
+    "name": "Mélange Caramel Trèfle en Sucre",
+    "full": "Charmilly Mélange Caramel Trèfle en Sucre",
+    "sprite": "869-caramel-swirl-clover-sweet"
+   },
+   "rainbow-swirl-clover-sweet": {
+    "name": "Mélange Tricolore Trèfle en Sucre",
+    "full": "Charmilly Mélange Tricolore Trèfle en Sucre",
+    "sprite": "869-rainbow-swirl-clover-sweet"
+   },
+   "vanilla-cream-flower-sweet": {
+    "name": "Lait Vanille Fleur en Sucre",
+    "full": "Charmilly Lait Vanille Fleur en Sucre",
+    "sprite": "869-vanilla-cream-flower-sweet"
+   },
+   "ruby-cream-flower-sweet": {
+    "name": "Lait Ruby Fleur en Sucre",
+    "full": "Charmilly Lait Ruby Fleur en Sucre",
+    "sprite": "869-ruby-cream-flower-sweet"
+   },
+   "matcha-cream-flower-sweet": {
+    "name": "Lait Matcha Fleur en Sucre",
+    "full": "Charmilly Lait Matcha Fleur en Sucre",
+    "sprite": "869-matcha-cream-flower-sweet"
+   },
+   "mint-cream-flower-sweet": {
+    "name": "Lait Menthe Fleur en Sucre",
+    "full": "Charmilly Lait Menthe Fleur en Sucre",
+    "sprite": "869-mint-cream-flower-sweet"
+   },
+   "lemon-cream-flower-sweet": {
+    "name": "Lait Citron Fleur en Sucre",
+    "full": "Charmilly Lait Citron Fleur en Sucre",
+    "sprite": "869-lemon-cream-flower-sweet"
+   },
+   "salted-cream-flower-sweet": {
+    "name": "Lait Salé Fleur en Sucre",
+    "full": "Charmilly Lait Salé Fleur en Sucre",
+    "sprite": "869-salted-cream-flower-sweet"
+   },
+   "ruby-swirl-flower-sweet": {
+    "name": "Mélange Ruby Fleur en Sucre",
+    "full": "Charmilly Mélange Ruby Fleur en Sucre",
+    "sprite": "869-ruby-swirl-flower-sweet"
+   },
+   "caramel-swirl-flower-sweet": {
+    "name": "Mélange Caramel Fleur en Sucre",
+    "full": "Charmilly Mélange Caramel Fleur en Sucre",
+    "sprite": "869-caramel-swirl-flower-sweet"
+   },
+   "rainbow-swirl-flower-sweet": {
+    "name": "Mélange Tricolore Fleur en Sucre",
+    "full": "Charmilly Mélange Tricolore Fleur en Sucre",
+    "sprite": "869-rainbow-swirl-flower-sweet"
+   },
+   "vanilla-cream-ribbon-sweet": {
+    "name": "Lait Vanille Ruban en Sucre",
+    "full": "Charmilly Lait Vanille Ruban en Sucre",
+    "sprite": "869-vanilla-cream-ribbon-sweet"
+   },
+   "ruby-cream-ribbon-sweet": {
+    "name": "Lait Ruby Ruban en Sucre",
+    "full": "Charmilly Lait Ruby Ruban en Sucre",
+    "sprite": "869-ruby-cream-ribbon-sweet"
+   },
+   "matcha-cream-ribbon-sweet": {
+    "name": "Lait Matcha Ruban en Sucre",
+    "full": "Charmilly Lait Matcha Ruban en Sucre",
+    "sprite": "869-matcha-cream-ribbon-sweet"
+   },
+   "mint-cream-ribbon-sweet": {
+    "name": "Lait Menthe Ruban en Sucre",
+    "full": "Charmilly Lait Menthe Ruban en Sucre",
+    "sprite": "869-mint-cream-ribbon-sweet"
+   },
+   "lemon-cream-ribbon-sweet": {
+    "name": "Lait Citron Ruban en Sucre",
+    "full": "Charmilly Lait Citron Ruban en Sucre",
+    "sprite": "869-lemon-cream-ribbon-sweet"
+   },
+   "salted-cream-ribbon-sweet": {
+    "name": "Lait Salé Ruban en Sucre",
+    "full": "Charmilly Lait Salé Ruban en Sucre",
+    "sprite": "869-salted-cream-ribbon-sweet"
+   },
+   "ruby-swirl-ribbon-sweet": {
+    "name": "Mélange Ruby Ruban en Sucre",
+    "full": "Charmilly Mélange Ruby Ruban en Sucre",
+    "sprite": "869-ruby-swirl-ribbon-sweet"
+   },
+   "caramel-swirl-ribbon-sweet": {
+    "name": "Mélange Caramel Ruban en Sucre",
+    "full": "Charmilly Mélange Caramel Ruban en Sucre",
+    "sprite": "869-caramel-swirl-ribbon-sweet"
+   },
+   "rainbow-swirl-ribbon-sweet": {
+    "name": "Mélange Tricolore Ruban en Sucre",
+    "full": "Charmilly Mélange Tricolore Ruban en Sucre",
+    "sprite": "869-rainbow-swirl-ribbon-sweet"
+   }
+  }
+ },
+ "876": {
+  "default": "Mâle",
+  "forms": {
+   "female": {
+    "name": "Femelle",
+    "full": "Wimessir Femelle",
+    "sprite": "10186"
+   }
+  }
+ },
+ "890": {
+  "default": "Forme normale",
+  "forms": {
+   "eternamax": {
+    "name": "Infinimax",
+    "full": "Éthernatos Infinimax",
+    "sprite": "10190"
+   }
+  }
+ },
+ "892": {
+  "default": "Style Poing Final",
+  "forms": {
+   "rapid-strike": {
+    "name": "Style Mille Poings",
+    "full": "Shifours Style Mille Poings",
+    "sprite": "10191"
+   }
+  }
+ },
+ "893": {
+  "default": "Forme normale",
+  "forms": {
+   "dada": {
+    "name": "Papa",
+    "full": "Zarude Papa",
+    "sprite": "10192"
+   }
+  }
+ },
+ "898": {
+  "default": "Forme normale",
+  "forms": {
+   "ice": {
+    "name": "Cavalier du Froid",
+    "full": "Calyrex Cavalier du Froid",
+    "sprite": "10193"
+   },
+   "shadow": {
+    "name": "Cavalier d’Effroi",
+    "full": "Calyrex Cavalier d’Effroi",
+    "sprite": "10194"
+   }
+  }
+ },
+ "901": {
+  "default": "Forme normale",
+  "forms": {
+   "bloodmoon": {
+    "name": "Lune Vermeille",
+    "full": "Ursaking Lune Vermeille",
+    "sprite": "10272"
+   }
+  }
+ },
+ "902": {
+  "default": "Mâle",
+  "forms": {
+   "female": {
+    "name": "Femelle",
+    "full": "Paragruel Femelle",
+    "sprite": "10248"
+   }
+  }
+ },
+ "905": {
+  "default": "Forme Avatar",
+  "forms": {
+   "therian": {
+    "name": "Forme Totémique",
+    "full": "Amovénus Totémique",
+    "sprite": "10249"
+   }
+  }
+ },
+ "916": {
+  "default": "Mâle",
+  "forms": {
+   "female": {
+    "name": "Femelle",
+    "full": "Fragroin Femelle",
+    "sprite": "10254"
+   }
+  }
+ },
+ "925": {
+  "default": "Famille de Quatre",
+  "forms": {
+   "family-of-three": {
+    "name": "Famille de Trois",
+    "full": "Famignol Famille de Trois",
+    "sprite": "10257"
+   }
+  }
+ },
+ "931": {
+  "default": "Plumage Vert",
+  "forms": {
+   "blue-plumage": {
+    "name": "Plumage Bleu",
+    "full": "Tapatoès Plumage Bleu",
+    "sprite": "10260"
+   },
+   "yellow-plumage": {
+    "name": "Plumage Jaune",
+    "full": "Tapatoès Plumage Jaune",
+    "sprite": "10261"
+   },
+   "white-plumage": {
+    "name": "Plumage Blanc",
+    "full": "Tapatoès Plumage Blanc",
+    "sprite": "10262"
+   }
+  }
+ },
+ "978": {
+  "default": "Forme Courbée",
+  "forms": {
+   "droopy": {
+    "name": "Forme Affalée",
+    "full": "Nigirigon Forme Affalée",
+    "sprite": "10258"
+   },
+   "stretchy": {
+    "name": "Forme Raide",
+    "full": "Nigirigon Forme Raide",
+    "sprite": "10259"
+   }
+  }
+ },
+ "982": {
+  "default": "Forme Double",
+  "forms": {
+   "three-segment": {
+    "name": "Forme Triple",
+    "full": "Deusolourdo Forme Triple",
+    "sprite": "10255"
+   }
+  }
+ },
+ "999": {
+  "default": "Forme Coffre",
+  "forms": {
+   "roaming": {
+    "name": "Forme Marche",
+    "full": "Mordudor Forme Marche",
+    "sprite": "10263"
+   }
+  }
+ },
+ "1007": {
+  "default": "Forme Finale",
+  "forms": {
+   "limited-build": {
+    "name": "Forme Limitée",
+    "full": "Koraidon Forme Limitée",
+    "sprite": "10264"
+   },
+   "sprinting-build": {
+    "name": "Forme de Course",
+    "full": "Koraidon Forme de Course",
+    "sprite": "10265"
+   },
+   "swimming-build": {
+    "name": "Forme de Nage",
+    "full": "Koraidon Forme de Nage",
+    "sprite": "10266"
+   },
+   "gliding-build": {
+    "name": "Forme de Vol",
+    "full": "Koraidon Forme de Vol",
+    "sprite": "10267"
+   }
+  }
+ },
+ "1008": {
+  "default": "Mode Ultime",
+  "forms": {
+   "low-power-mode": {
+    "name": "Mode Bridé",
+    "full": "Miraidon Mode Bridé",
+    "sprite": "10268"
+   },
+   "drive-mode": {
+    "name": "Mode Terrestre",
+    "full": "Miraidon Mode Terrestre",
+    "sprite": "10269"
+   },
+   "aquatic-mode": {
+    "name": "Mode Aquatique",
+    "full": "Miraidon Mode Aquatique",
+    "sprite": "10270"
+   },
+   "glide-mode": {
+    "name": "Mode Aérien",
+    "full": "Miraidon Mode Aérien",
+    "sprite": "10271"
+   }
+  }
+ },
+ "1012": {
+  "default": "Forme Imitation",
+  "forms": {
+   "artisan": {
+    "name": "Forme Onéreuse",
+    "full": "Poltchageist Forme Onéreuse",
+    "sprite": "1012-artisan"
+   }
+  }
+ },
+ "1013": {
+  "default": "Forme Médiocre",
+  "forms": {
+   "masterpiece": {
+    "name": "Forme Exceptionnelle",
+    "full": "Théffroyable Forme Exceptionnelle",
+    "sprite": "1013-masterpiece"
+   }
+  }
+ },
+ "1017": {
+  "default": "Masque Turquoise",
+  "forms": {
+   "wellspring-mask": {
+    "name": "Masque du Puits",
+    "full": "Ogerpon du Puits",
+    "sprite": "10273"
+   },
+   "hearthflame-mask": {
+    "name": "Masque du Fourneau",
+    "full": "Ogerpon du Fourneau",
+    "sprite": "10274"
+   },
+   "cornerstone-mask": {
+    "name": "Masque de la Pierre",
+    "full": "Ogerpon de la Pierre",
+    "sprite": "10275"
+   }
+  }
+ }
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}KRABHUNT{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <a class="brand" href="{{ url_for('home') }}">✨ KRABHUNT</a>
+    <nav>
+      {% if g.user %}
+        <a href="{{ url_for('collection', username=g.user.username) }}">Ma collection</a>
+        <a href="{{ url_for('hunts') }}">Compteur</a>
+        <a href="{{ url_for('shiny_new') }}" class="btn-small">+ Ajouter</a>
+        <form action="{{ url_for('logout') }}" method="post">
+          <button type="submit" class="link">Déconnexion</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('login') }}">Connexion</a>
+        <a href="{{ url_for('register') }}" class="btn-small">Créer un compte</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main>
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    // Essaie les sprites candidats dans l'ordre jusqu'à en trouver un qui existe
+    document.querySelectorAll("img[data-sprites]").forEach(img => {
+      const urls = JSON.parse(img.dataset.sprites);
+      let i = 0;
+      img.onerror = () => { if (++i < urls.length) img.src = urls[i]; else img.onerror = null; };
+      img.src = urls[0];
+    });
+  </script>
+  <script src="{{ url_for('static', filename='forms.js') }}"></script>
+</body>
+</html>

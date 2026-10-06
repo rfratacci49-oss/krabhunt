@@ -1,0 +1,19 @@
+{# Liste « Forme » liée au champ Pokémon `species_id` (remplie par static/forms.js) #}
+{% macro form_picker(species_id, selected='', select_id='form') %}
+<div data-forms-for="{{ species_id }}" hidden>
+  <label for="{{ select_id }}">Forme</label>
+  <select id="{{ select_id }}" name="form" data-selected="{{ selected or '' }}"></select>
+</div>
+{% endmacro %}
+
+{# Onglets des collections (Jeux officiels, PixelmonWorld, Cobblemon) vers la même page `endpoint` #}
+{% macro collection_tabs(endpoint) %}
+{% if collections | length > 1 %}
+<nav class="collection-tabs" aria-label="Collections">
+  {% for key, label, n in collections %}
+    <a href="{{ url_for(endpoint, username=owner.username, collection=key) }}"
+       {% if key == coll %}aria-current="page"{% endif %}>{{ label }} <span class="count">{{ n }}</span></a>
+  {% endfor %}
+</nav>
+{% endif %}
+{% endmacro %}

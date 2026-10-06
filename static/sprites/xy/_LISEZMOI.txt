@@ -1,0 +1,14 @@
+Sprites shiny pour : X / Y
+
+Nom du fichier = numéro du Pokédex national (sans zéros devant).
+  25.png    -> Pikachu
+  25-f.png  -> Pikachu femelle (facultatif)
+  94.gif    -> Ectoplasma (png, gif, webp ou jpg acceptés)
+
+Formes (régionales ou autres) : numéro-clé de la forme.
+  19-alola.png   -> Rattata d’Alola
+  201-b.png      -> Zarbi B
+  666-polar.png  -> Prismillon Motif Banquise
+Les clés des formes sont listées dans data/forms_fr.json.
+
+Si le fichier n'existe pas ici, le sprite est chargé depuis PokeAPI.
