@@ -77,6 +77,7 @@ MIGRATIONS = {
         "mode": "TEXT NOT NULL DEFAULT 'count' CHECK (mode IN ('count', 'timer'))",
         "elapsed": "INTEGER NOT NULL DEFAULT 0 CHECK (elapsed >= 0)",
         "started_at": "INTEGER",
+        "last_tick": "INTEGER",
     },
 }
 
@@ -101,11 +102,33 @@ def move_note_fields(db):
         )
 
 
+PHASE_TABLES = {"hunt_phases": "target_id", "hunt_pending_phases": "hunt_id"}
+
+
+def migrate_phase_tables(db, schema):
+    """Anciennes tables de phases (shiny uniquement) -> nouvelles (shiny ou shiny manqué), données gardées."""
+    old = [t for t in PHASE_TABLES
+           if db.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", (t,)).fetchone()
+           and "fail_id" not in {r["name"] for r in db.execute(f"PRAGMA table_info({t})")}]
+    if not old:
+        return
+    for table in old:
+        db.execute(f"ALTER TABLE {table} RENAME TO {table}_old")
+    db.executescript(schema)  # recrée les tables au nouveau format
+    for table in old:
+        owner = PHASE_TABLES[table]
+        db.execute(f"INSERT INTO {table} ({owner}, shiny_id, position) "
+                   f"SELECT {owner}, shiny_id, position FROM {table}_old")
+        db.execute(f"DROP TABLE {table}_old")
+
+
 def init_db():
     """Crée les tables et colonnes manquantes (sans toucher aux données existantes)."""
     db = get_db()
     with open(os.path.join(BASE_DIR, "schema.sql"), encoding="utf-8") as f:
-        db.executescript(f.read())
+        schema = f.read()
+    db.executescript(schema)
+    migrate_phase_tables(db, schema)
     added = set()
     for table, columns in MIGRATIONS.items():
         existing = {row["name"] for row in db.execute(f"PRAGMA table_info({table})")}
@@ -141,7 +164,7 @@ def reset_db_command():
     """Supprime puis recrée toutes les tables."""
     db = get_db()
     db.executescript(
-        "DROP TABLE IF EXISTS hunt_pending_phases; DROP TABLE IF EXISTS hunts; "
+        "DROP TABLE IF EXISTS fails; DROP TABLE IF EXISTS hunt_pending_phases; DROP TABLE IF EXISTS hunts; "
         "DROP TABLE IF EXISTS hunt_phases; DROP TABLE IF EXISTS shinies; "
         "DROP TABLE IF EXISTS users;"
     )
@@ -285,25 +308,48 @@ def to_view(row):
     return shiny
 
 
+def phase_key(row):
+    """Clé d'une phase dans les formulaires : "12" (shiny n° 12) ou "f12" (shiny manqué n° 12)."""
+    return f"f{row['fail_id']}" if row["fail_id"] else str(row["shiny_id"])
+
+
+def phase_columns(key):
+    """(shiny_id, fail_id) d'une clé de phase."""
+    return (None, int(key[1:])) if key.startswith("f") else (int(key), None)
+
+
+# Nom d'une phase (shiny ou manqué) dans les requêtes sur hunt_phases / hunt_pending_phases (alias p)
+PHASE_NAME_JOIN = """LEFT JOIN shinies ps ON ps.id = p.shiny_id LEFT JOIN fails pf ON pf.id = p.fail_id"""
+PHASE_NAME_COLUMNS = """COALESCE(ps.species_id, pf.species_id) AS phase_species, COALESCE(ps.form, pf.form) AS phase_form,
+                        ps.nickname AS phase_nickname"""
+
+
+def phase_name(row):
+    name = row["phase_nickname"] or display_name(row["phase_species"], row["phase_form"])
+    return f"{name} (manqué)" if row["fail_id"] else name
+
+
 def attach_phases(shinies):
     """Renseigne les infos de phase des shiny donnés (une seule requête).
 
-    Le numéro de phase est le rang dans la chasse : il se recalcule tout seul
-    si une phase est supprimée.
+    Le numéro de phase est le rang dans la chasse (shiny manqués compris) : il se recalcule
+    tout seul si une phase est supprimée.
     """
     by_id = {s["id"]: s for s in shinies}
     if not by_id:
         return
     placeholders = ",".join("?" * len(by_id))
     for row in get_db().execute(
-        f"""SELECT target_id, shiny_id FROM hunt_phases
-            WHERE target_id IN ({placeholders}) ORDER BY target_id, position""",
+        f"""SELECT p.target_id, p.shiny_id, p.fail_id, {PHASE_NAME_COLUMNS}
+            FROM hunt_phases p {PHASE_NAME_JOIN}
+            WHERE p.target_id IN ({placeholders}) ORDER BY p.target_id, p.position""",
         list(by_id),
     ):
-        target, phase = by_id[row["target_id"]], by_id.get(row["shiny_id"])
+        target = by_id[row["target_id"]]
+        target["phases"].append(phase_name(row))
+        phase = by_id.get(row["shiny_id"])
         if phase is None:
             continue
-        target["phases"].append(phase["name"])
         phase["phase_number"] = len(target["phases"])
         phase["phase_target"] = target["name"]
         phase["phase_target_id"] = target["id"]
@@ -392,9 +438,12 @@ def collection_context(owner, collection):
     ):
         counts[collection_of(row["game"])] += row["n"]
     is_owner = g.user is not None and g.user["id"] == owner["id"]
+    fails = sum(1 for row in get_db().execute("SELECT game FROM fails WHERE user_id = ?", (owner["id"],))
+                if collection_of(row["game"]) == collection)
     return {
         "owner": owner,
         "is_owner": is_owner,
+        "fails_count": fails,
         "coll": collection,
         "coll_label": COLLECTIONS[collection][0],
         # Onglets : toujours pour le propriétaire, sinon seulement les collections non vides
@@ -487,6 +536,217 @@ def collection_shinydex(username, collection):
     )
 
 
+FAIL_REASONS = ["Fuite", "K.O. par erreur", "Capture ratée (plus de Balls…)", "Auto-destruction / Explosion",
+                "Coupure / plantage du jeu", "Mauvaise manipulation", "Pas vu à temps"]
+
+
+def fail_view(row):
+    f = dict(row)
+    f["species"] = display_name(row["species_id"], row["form"])
+    f["game_label"] = GAMES.get(row["game"], (row["game"],))[0]
+    f["gender_label"] = GENDERS.get(row["gender"]) if row["gender"] else None
+    f["sprites"] = sprite_candidates(row["species_id"], row["game"], row["gender"], row["form"])
+    f["odds"], _ = methods.odds(row["method"], row["game"], bool(row["shiny_charm"]))
+    return f
+
+
+def attach_fail_phases(fails):
+    """Numéro de phase et cible des shiny manqués qui sont des phases (chasse terminée ou en cours)."""
+    by_id = {f["id"]: f for f in fails}
+    for f in fails:
+        f["phase_number"] = f["phase_target"] = f["phase_target_id"] = None
+    if not by_id:
+        return
+    placeholders = ",".join("?" * len(by_id))
+    db = get_db()
+    for row in db.execute(
+        f"""SELECT p.fail_id, p.target_id,
+                   (SELECT COUNT(*) FROM hunt_phases o WHERE o.target_id = p.target_id
+                    AND o.position <= p.position) AS number
+            FROM hunt_phases p WHERE p.fail_id IN ({placeholders})""", list(by_id)):
+        target = to_view(db.execute("SELECT * FROM shinies WHERE id = ?", (row["target_id"],)).fetchone())
+        f = by_id[row["fail_id"]]
+        f["phase_number"], f["phase_target"], f["phase_target_id"] = row["number"], target["name"], target["id"]
+    for row in db.execute(
+        f"""SELECT p.fail_id, h.species_id, h.form,
+                   (SELECT COUNT(*) FROM hunt_pending_phases o WHERE o.hunt_id = p.hunt_id
+                    AND o.position <= p.position) AS number
+            FROM hunt_pending_phases p JOIN hunts h ON h.id = p.hunt_id
+            WHERE p.fail_id IN ({placeholders})""", list(by_id)):
+        f = by_id[row["fail_id"]]
+        f["phase_number"] = row["number"]
+        f["phase_target"] = f"{display_name(row['species_id'], row['form'])} (en cours)"
+
+
+def load_fails(owner, collection):
+    rows = get_db().execute(
+        "SELECT * FROM fails WHERE user_id = ? ORDER BY failed_on IS NULL, failed_on DESC, id DESC",
+        (owner["id"],),
+    )
+    fails = [fail_view(r) for r in rows if collection_of(r["game"]) == collection]
+    attach_fail_phases(fails)
+    return fails
+
+
+@app.route("/u/<username>/manques", defaults=MAIN)
+@app.route(f"/u/<username>/{SEPARATE}/manques")
+def collection_fails(username, collection):
+    owner, response = find_owner(username, "collection_fails", collection)
+    if response:
+        return response
+    return render_template("fails.html", **collection_context(owner, collection),
+                           fails=load_fails(owner, collection))
+
+
+def parse_fail_form(form):
+    """Valide le formulaire d'un shiny manqué ; renvoie (données, erreurs)."""
+    errors = []
+    species_name = form.get("species", "").strip()
+    species_id = find_species(species_name)
+    if species_id is None:
+        errors.append(f"Pokémon inconnu : « {species_name} ».")
+    variant, error = parse_variant(species_id, form)
+    if error:
+        errors.append(error)
+    game = form.get("game", "")
+    if game not in GAMES:
+        errors.append("Jeu invalide.")
+    method = form.get("method", "").strip()
+    if not method:
+        errors.append("La méthode est requise.")
+    gender = form.get("gender", "") or None
+    if gender is not None and gender not in GENDERS:
+        errors.append("Genre invalide.")
+    failed_on = form.get("failed_on", "").strip() or None
+    if failed_on:
+        try:
+            date.fromisoformat(failed_on)
+        except ValueError:
+            errors.append("Date invalide.")
+    encounters, ok = parse_count(form.get("encounters", ""))
+    if not ok:
+        errors.append("Le nombre de rencontres doit être un entier positif.")
+    duration = None
+    if form.get("duration", "").strip():
+        duration = parse_duration(form["duration"])
+        if duration is None:
+            errors.append("Durée invalide : utilisez H:MM:SS (ex. 2:30:00).")
+    location, shiny_charm = parse_location_charm(form)
+    return {
+        "species_id": species_id, "form": variant, "game": game, "method": method[:200],
+        "gender": gender, "encounters": encounters, "duration": duration, "location": location,
+        "shiny_charm": shiny_charm, "reason": form.get("reason", "").strip()[:200] or None,
+        "failed_on": failed_on, "notes": form.get("notes", "").strip()[:1000] or None,
+    }, errors
+
+
+FAIL_FIELDS = ["species_id", "form", "game", "method", "gender", "encounters", "duration", "location",
+               "shiny_charm", "reason", "failed_on", "notes"]
+
+
+def insert_fail(db, data):
+    """Ajoute un shiny manqué au compte connecté ; renvoie son id."""
+    columns = ", ".join(FAIL_FIELDS)
+    return db.execute(
+        f"INSERT INTO fails (user_id, {columns}) VALUES (:user_id, {', '.join(':' + f for f in FAIL_FIELDS)})",
+        {**dict.fromkeys(FAIL_FIELDS), "shiny_charm": 0, **data, "user_id": g.user["id"]},
+    ).lastrowid
+
+
+def add_pending_phase(db, hunt_id, shiny_id=None, fail_id=None):
+    """Ajoute une phase (shiny ou manqué) à la fin d'une chasse en cours ; renvoie son numéro."""
+    position = db.execute(
+        "SELECT COALESCE(MAX(position) + 1, 0) FROM hunt_pending_phases WHERE hunt_id = ?", (hunt_id,)
+    ).fetchone()[0]
+    db.execute("INSERT INTO hunt_pending_phases (hunt_id, shiny_id, fail_id, position) VALUES (?, ?, ?, ?)",
+               (hunt_id, shiny_id, fail_id, position))
+    return db.execute("SELECT COUNT(*) FROM hunt_pending_phases WHERE hunt_id = ?", (hunt_id,)).fetchone()[0]
+
+
+def render_fail_form(fail=None, form=None, hunt=None):
+    return render_template("fail_form.html", fail=fail, form=form or {}, hunt=hunt, reasons=FAIL_REASONS,
+                           hunt_label=display_name(hunt["species_id"], hunt["form"]) if hunt else "",
+                           pokedex=POKEDEX, games=GAMES, families=FAMILIES, genders=GENDERS,
+                           methods=methods.by_game())
+
+
+def redirect_to_fails(game):
+    return redirect(url_for("collection_fails", username=g.user["username"], collection=collection_of(game)))
+
+
+@app.route("/manque/new", methods=["GET", "POST"])
+@login_required
+def fail_new():
+    # Depuis le compteur : la chasse fournit les valeurs par défaut ; elle continue ensuite
+    hunt_id = request.values.get("chasse", type=int)
+    hunt = get_own_hunt(hunt_id) if hunt_id else None
+    if request.method == "POST":
+        data, errors = parse_fail_form(request.form)
+        if not errors:
+            db = get_db()
+            fail_id = insert_fail(db, data)
+            message = f"{display_name(data['species_id'], data['form'])} ajouté aux shiny manqués 😭"
+            if hunt and request.form.get("phase") == "1":
+                message += f" (phase {add_pending_phase(db, hunt['id'], fail_id=fail_id)} de la chasse)"
+            db.commit()
+            flash(message, "success")
+            if hunt:
+                return redirect(url_for("hunt_counter", hunt_id=hunt["id"]))
+            return redirect_to_fails(data["game"])
+        for e in errors:
+            flash(e, "error")
+        return render_fail_form(form=request.form, hunt=hunt)
+    form = {"failed_on": date.today().isoformat()}
+    if hunt:
+        elapsed = hunt_elapsed(hunt)
+        form |= {"species": POKEDEX.get(hunt["species_id"], ""), "form": hunt["form"] or "",
+                 "game": hunt["game"], "method": hunt["method"], "location": hunt["location"] or "",
+                 "shiny_charm": hunt["shiny_charm"],
+                 "encounters": hunt["count"] if hunt["mode"] == "count" else "",
+                 "duration": clock(elapsed) if elapsed else ""}
+    return render_fail_form(form=form, hunt=hunt)
+
+
+def get_own_fail(fail_id):
+    row = get_db().execute("SELECT * FROM fails WHERE id = ? AND user_id = ?", (fail_id, g.user["id"])).fetchone()
+    if row is None:
+        abort(404)
+    return row
+
+
+@app.route("/manque/<int:fail_id>/edit", methods=["GET", "POST"])
+@login_required
+def fail_edit(fail_id):
+    row = get_own_fail(fail_id)
+    if request.method == "POST":
+        data, errors = parse_fail_form(request.form)
+        if not errors:
+            db = get_db()
+            db.execute(f"UPDATE fails SET {', '.join(f + ' = :' + f for f in FAIL_FIELDS)} "
+                       "WHERE id = :id AND user_id = :user_id", {**data, "id": fail_id, "user_id": g.user["id"]})
+            db.commit()
+            flash("Modifications enregistrées.", "success")
+            return redirect_to_fails(data["game"])
+        for e in errors:
+            flash(e, "error")
+        return render_fail_form(fail=row, form=request.form)
+    form = {k: "" if row[k] is None else row[k] for k in row.keys()}
+    form["species"] = POKEDEX.get(row["species_id"], "")
+    form["duration"] = clock(row["duration"]) if row["duration"] is not None else ""
+    return render_fail_form(fail=row, form=form)
+
+
+@app.route("/manque/<int:fail_id>/delete", methods=["POST"])
+@login_required
+def fail_delete(fail_id):
+    row = get_own_fail(fail_id)
+    db = get_db()
+    db.execute("DELETE FROM fails WHERE id = ? AND user_id = ?", (fail_id, g.user["id"]))
+    db.commit()
+    flash("Shiny manqué supprimé.", "success")
+    return redirect_to_fails(row["game"])
+
+
 def export_filename(owner, collection, kind=""):
     parts = ["krabhunt", owner["username"]]
     if collection != MAIN_COLLECTION:
@@ -530,7 +790,7 @@ def collection_export_tracker(username, collection):
         ) if collection_of(h["game"]) == collection]
     title = owner["username"] + (f" ({COLLECTIONS[collection][0]})" if collection != MAIN_COLLECTION else "")
     return Response(
-        export.to_tracker_csv(shinies, title, hunts),
+        export.to_tracker_csv(shinies, title, hunts, load_fails(owner, collection)),
         mimetype="text/csv",
         headers={"Content-Disposition":
                  f'attachment; filename="{export_filename(owner, collection, "tracker")}"'},
@@ -564,17 +824,21 @@ def plan_import(text, skip_duplicates):
 
     Renvoie un dict : shiny et chasses en cours à importer, leurs doublons, erreurs, remarques.
     """
-    rows, hunts, errors, notices = importer.parse(text)
+    rows, hunts, fails, errors, notices = importer.parse(text)
     db = get_db()
-    existing, existing_hunts = {}, {}
+    existing, existing_hunts, existing_fails = {}, {}, {}
+    for row in db.execute("SELECT * FROM fails WHERE user_id = ?", (g.user["id"],)):
+        existing_fails.setdefault(importer.fail_fingerprint(row), row["id"])
     for row in db.execute("SELECT * FROM shinies WHERE user_id = ?", (g.user["id"],)):
         existing.setdefault(importer.fingerprint(row), row["id"])
     for row in db.execute("SELECT * FROM hunts WHERE user_id = ?", (g.user["id"],)):
         existing_hunts.setdefault(importer.hunt_fingerprint(row), row["id"])
     to_import, duplicates = split_duplicates(rows, existing, importer.fingerprint, skip_duplicates)
     hunts, hunt_duplicates = split_duplicates(hunts, existing_hunts, importer.hunt_fingerprint, skip_duplicates)
+    fails, fail_duplicates = split_duplicates(fails, existing_fails, importer.fail_fingerprint, skip_duplicates)
     return {"to_import": to_import, "duplicates": duplicates, "hunts": hunts,
-            "hunt_duplicates": hunt_duplicates, "errors": errors, "notices": notices}
+            "hunt_duplicates": hunt_duplicates, "fails": fails, "fail_duplicates": fail_duplicates,
+            "errors": errors, "notices": notices}
 
 
 @app.route("/import", methods=["GET", "POST"])
@@ -600,9 +864,10 @@ def collection_import():
         preview = [dict(row, view=to_view({**row["data"], "id": 0, "user_id": g.user["id"]}))
                    for row in to_import[:30]]
         hunts_preview = [hunt_view({**row["data"], "id": 0, "user_id": g.user["id"]}) for row in hunts]
+        fails_preview = [fail_view({**row["data"], "id": 0, "user_id": g.user["id"]}) for row in plan["fails"]]
         return render_template(
             "import.html", step="preview", csv=text, skip_duplicates=skip_duplicates,
-            preview=preview, hunts_preview=hunts_preview, **plan,
+            preview=preview, hunts_preview=hunts_preview, fails_preview=fails_preview, **plan,
         )
 
     db = get_db()
@@ -623,6 +888,9 @@ def collection_import():
             (g.user["id"], hunt["species_id"], hunt["form"], hunt["game"], hunt["method"],
              hunt["location"], hunt["shiny_charm"], hunt["count"], hunt["created_at"]),
         )
+
+    for row in plan["fails"]:
+        insert_fail(db, row["data"])
 
     # Phases : on relie chaque phase importée à sa cible, dans l'ordre des numéros de phase
     by_target = {}
@@ -649,7 +917,10 @@ def collection_import():
         message += f", {linked} phase{'s' if linked > 1 else ''} reliée{'s' if linked > 1 else ''}"
     if hunts:
         message += f", {len(hunts)} chasse{'s' if len(hunts) > 1 else ''} en cours ajoutée{'s' if len(hunts) > 1 else ''} au compteur"
-    duplicates = duplicates + plan["hunt_duplicates"]
+    if plan["fails"]:
+        n = len(plan["fails"])
+        message += f", {n} shiny manqué{'s' if n > 1 else ''}"
+    duplicates = duplicates + plan["hunt_duplicates"] + plan["fail_duplicates"]
     if duplicates:
         message += f" ; {len(duplicates)} doublon{'s' if len(duplicates) > 1 else ''} ignoré{'s' if len(duplicates) > 1 else ''}"
     if errors:
@@ -690,10 +961,11 @@ def parse_count(value):
 
 
 def phase_candidates(target_id=None):
-    """Shiny du compte pouvant servir de phase à la cible `target_id` (None = nouvelle cible).
+    """Shiny et shiny manqués du compte pouvant servir de phase à la cible `target_id`
+    (None = nouvelle cible) : {clé de phase: libellé}.
 
     Exclus : la cible elle-même, les shiny qui sont déjà cibles d'une chasse avec phases,
-    et ceux déjà rattachés comme phase à une autre chasse.
+    et ceux (ou les manqués) déjà rattachés comme phase à une autre chasse.
     """
     target_id = target_id or 0
     rows = get_db().execute(
@@ -710,31 +982,44 @@ def phase_candidates(target_id=None):
         parts = [s["name"] + (f" ({s['species']})" if row["nickname"] else ""), s["game_label"]]
         if row["caught_on"]:
             parts.append(date_fr(row["caught_on"]))
-        candidates[row["id"]] = " · ".join(parts)
+        candidates[str(row["id"])] = " · ".join(parts)
+    for row in get_db().execute(
+        """SELECT * FROM fails
+           WHERE user_id = ? AND id NOT IN (SELECT fail_id FROM hunt_phases
+                                            WHERE fail_id IS NOT NULL AND target_id != ?)
+           ORDER BY failed_on IS NULL, failed_on, id""",
+        (g.user["id"], target_id),
+    ):
+        f = fail_view(row)
+        parts = [f"😭 {f['species']} (manqué)", f["game_label"]]
+        if row["reason"]:
+            parts.append(row["reason"])
+        if row["failed_on"]:
+            parts.append(date_fr(row["failed_on"]))
+        candidates[f"f{row['id']}"] = " · ".join(parts)
     return candidates
 
 
 def parse_phases(form, candidates):
-    """Lit les phases choisies (ids de shiny, dans l'ordre) ; renvoie (ids, erreurs)."""
-    ids, errors = [], []
+    """Lit les phases choisies (clés de phase, dans l'ordre) ; renvoie (clés, erreurs)."""
+    keys, errors = [], []
     for number, value in enumerate(form.getlist("phase_shiny"), start=1):
         if not value:
             continue
-        shiny_id = int(value) if value.isascii() and value.isdigit() else None
-        if shiny_id not in candidates:
+        if value not in candidates:
             errors.append(f"Phase {number} : ce shiny ne peut pas être choisi comme phase.")
-        elif shiny_id in ids:
+        elif value in keys:
             errors.append(f"Phase {number} : ce shiny est déjà dans la liste.")
         else:
-            ids.append(shiny_id)
-    return ids, errors
+            keys.append(value)
+    return keys, errors
 
 
 def phase_ids(target_id):
     return [
-        row["shiny_id"]
+        phase_key(row)
         for row in get_db().execute(
-            "SELECT shiny_id FROM hunt_phases WHERE target_id = ? ORDER BY position", (target_id,)
+            "SELECT shiny_id, fail_id FROM hunt_phases WHERE target_id = ? ORDER BY position", (target_id,)
         )
     ]
 
@@ -755,13 +1040,28 @@ def phase_of(shiny_id):
     return row["number"], target
 
 
-def save_phases(db, target_id, ids):
-    """Remplace toutes les phases d'une chasse."""
+def save_phases(db, target_id, keys):
+    """Remplace toutes les phases d'une chasse (clés de phase, dans l'ordre)."""
     db.execute("DELETE FROM hunt_phases WHERE target_id = ?", (target_id,))
     db.executemany(
-        "INSERT INTO hunt_phases (target_id, shiny_id, position) VALUES (?, ?, ?)",
-        [(target_id, shiny_id, position) for position, shiny_id in enumerate(ids)],
+        "INSERT INTO hunt_phases (target_id, shiny_id, fail_id, position) VALUES (?, ?, ?, ?)",
+        [(target_id, *phase_columns(key), position) for position, key in enumerate(keys)],
     )
+
+
+def phase_list(table, owner_column, owner_id):
+    """Phases d'une chasse, dans l'ordre : [{"fail": bool, "view": to_view ou fail_view}]."""
+    db = get_db()
+    phases = []
+    for row in db.execute(f"SELECT shiny_id, fail_id FROM {table} WHERE {owner_column} = ? ORDER BY position",
+                          (owner_id,)):
+        if row["fail_id"]:
+            phases.append({"fail": True, "view": fail_view(
+                db.execute("SELECT * FROM fails WHERE id = ?", (row["fail_id"],)).fetchone())})
+        else:
+            phases.append({"fail": False, "view": to_view(
+                db.execute("SELECT * FROM shinies WHERE id = ?", (row["shiny_id"],)).fetchone())})
+    return phases
 
 
 def parse_variant(species_id, form):
@@ -919,7 +1219,7 @@ def shiny_new():
             "game": hunt["game"],
             "method": hunt["method"],
             "encounters": hunt["count"] if hunt["mode"] == "count" else "",
-            "duration": clock(hunt["elapsed"]) if hunt["mode"] == "timer" else "",
+            "duration": clock(hunt["elapsed"]) if hunt["elapsed"] else "",
             "location": hunt["location"] or "",
             "shiny_charm": hunt["shiny_charm"],
             "caught_on": date.today().isoformat(),
@@ -938,9 +1238,7 @@ def shiny_detail(shiny_id):
         abort(404)
     owner = db.execute("SELECT * FROM users WHERE id = ?", (row["user_id"],)).fetchone()
     s = to_view(row)
-    phases = [to_view(r) for r in db.execute(
-        """SELECT s.* FROM hunt_phases p JOIN shinies s ON s.id = p.shiny_id
-           WHERE p.target_id = ? ORDER BY p.position""", (shiny_id,))]
+    phases = phase_list("hunt_phases", "target_id", shiny_id)
     attach_phases([s])  # nom de la cible si ce shiny est une phase
     if (info := phase_of(shiny_id)):
         s["phase_number"], target = info
@@ -953,6 +1251,7 @@ def shiny_detail(shiny_id):
         phases=phases,
         odds_note=odds_note,
         luck=stats.luck(row["encounters"], s["odds"]),
+        rate=encounter_rate(row["encounters"], row["duration"]),
     )
 
 
@@ -1034,9 +1333,9 @@ def get_own_hunt(hunt_id):
 
 def pending_phase_ids(hunt_id):
     return [
-        row["shiny_id"]
+        phase_key(row)
         for row in get_db().execute(
-            "SELECT shiny_id FROM hunt_pending_phases WHERE hunt_id = ? ORDER BY position",
+            "SELECT shiny_id, fail_id FROM hunt_pending_phases WHERE hunt_id = ? ORDER BY position",
             (hunt_id,),
         )
     ]
@@ -1053,9 +1352,29 @@ def pause_timer(db, hunt):
                (hunt_elapsed(hunt), hunt["id"]))
 
 
+IDLE_GAP = 300  # au-delà de 5 min sans clic, la pause ne compte pas dans le temps actif
+
+
+def add_encounters(db, hunt, delta):
+    """Ajoute `delta` rencontres et le temps écoulé depuis le clic précédent (s'il est récent)."""
+    now = int(time.time())
+    gap = now - hunt["last_tick"] if hunt["last_tick"] else None
+    active = gap if gap is not None and 0 < gap <= IDLE_GAP else 0
+    db.execute("UPDATE hunts SET count = MAX(0, count + ?), elapsed = elapsed + ?, last_tick = ? WHERE id = ?",
+               (delta, active, now, hunt["id"]))
+
+
+def encounter_rate(encounters, seconds):
+    """Rencontres par heure (arrondi), ou None s'il n'y a pas assez de données (moins d'une minute)."""
+    if not encounters or not seconds or seconds < 60:
+        return None
+    return round(encounters * 3600 / seconds)
+
+
 def hunt_view(row):
     hunt = {"mode": "count", "elapsed": 0, "started_at": None, **row}  # aperçu d'import : sans timer
     hunt["elapsed_now"] = hunt_elapsed(hunt)
+    hunt["rate"] = encounter_rate(hunt.get("count"), hunt["elapsed"]) if hunt["mode"] == "count" else None
     hunt["odds"], hunt["odds_note"] = methods.odds(hunt["method"], hunt["game"], bool(hunt.get("shiny_charm")))
     hunt["species"] = display_name(row["species_id"], row["form"])
     hunt["game_label"] = GAMES.get(row["game"], (row["game"],))[0]
@@ -1132,15 +1451,10 @@ def hunts_multi():
 @login_required
 def hunt_counter(hunt_id):
     hunt = hunt_view(get_own_hunt(hunt_id))
-    rows = get_db().execute(
-        """SELECT s.* FROM hunt_pending_phases p JOIN shinies s ON s.id = p.shiny_id
-           WHERE p.hunt_id = ? ORDER BY p.position""",
-        (hunt_id,),
-    )
     return render_template(
         "hunt_counter.html",
         hunt=hunt,
-        phases=[to_view(r) for r in rows],
+        phases=phase_list("hunt_pending_phases", "hunt_id", hunt_id),
         pokedex=POKEDEX,
         genders=GENDERS,
         balls=BALLS,
@@ -1151,7 +1465,7 @@ def hunt_counter(hunt_id):
 @login_required
 def hunt_count(hunt_id):
     """API JSON du compteur : {"delta": n} ajoute n, {"value": n} fixe la valeur, {"step": n}."""
-    get_own_hunt(hunt_id)
+    hunt = get_own_hunt(hunt_id)
     payload = request.get_json(silent=True) or {}
     db = get_db()
 
@@ -1160,14 +1474,15 @@ def hunt_count(hunt_id):
         return value if isinstance(value, int) and not isinstance(value, bool) else None
 
     if (delta := as_int("delta")) is not None:
-        db.execute("UPDATE hunts SET count = MAX(0, count + ?) WHERE id = ?", (delta, hunt_id))
+        add_encounters(db, hunt, delta)
     if (value := as_int("value")) is not None and value >= 0:
         db.execute("UPDATE hunts SET count = ? WHERE id = ?", (value, hunt_id))
     if (step := as_int("step")) is not None and 1 <= step <= 100:
         db.execute("UPDATE hunts SET step = ? WHERE id = ?", (step, hunt_id))
     db.commit()
     hunt = get_own_hunt(hunt_id)
-    return {"count": hunt["count"], "step": hunt["step"]}
+    return {"count": hunt["count"], "step": hunt["step"], "elapsed": hunt["elapsed"],
+            "rate": encounter_rate(hunt["count"], hunt["elapsed"])}
 
 
 @app.route("/compteur/<int:hunt_id>/timer", methods=["POST"])
@@ -1223,20 +1538,12 @@ def hunt_phase(hunt_id):
             "nickname": request.form.get("nickname", "").strip() or None,
             "ball": ball,
             "encounters": hunt["count"] if hunt["mode"] == "count" else None,
-            "duration": hunt_elapsed(hunt) if hunt["mode"] == "timer" else None,
+            "duration": hunt_elapsed(hunt) or None,
             "caught_on": date.today().isoformat(),
         })
-        position = db.execute(
-            "SELECT COALESCE(MAX(position) + 1, 0) FROM hunt_pending_phases WHERE hunt_id = ?",
-            (hunt_id,),
-        ).fetchone()[0]
-        db.execute(
-            "INSERT INTO hunt_pending_phases (hunt_id, shiny_id, position) VALUES (?, ?, ?)",
-            (hunt_id, shiny_id, position),
-        )
+        number = add_pending_phase(db, hunt_id, shiny_id=shiny_id)
         db.commit()
-        flash(f"Phase {position + 1} : {display_name(species_id, variant)} ajouté à la collection ✨",
-              "success")
+        flash(f"Phase {number} : {display_name(species_id, variant)} ajouté à la collection ✨", "success")
     return redirect(url_for("hunt_counter", hunt_id=hunt_id))
 
 
@@ -1407,7 +1714,7 @@ def api_hunt(token, hunt_id):
     action = (request.get_json(silent=True) or {}).get("action")
     if action in ("plus", "moins"):
         sign = 1 if action == "plus" else -1
-        db.execute("UPDATE hunts SET count = MAX(0, count + ?) WHERE id = ?", (sign * hunt["step"], hunt_id))
+        add_encounters(db, hunt, sign * hunt["step"])
     elif action in ("timer", "start", "pause"):
         running = hunt["started_at"] is not None
         if action == "timer":

@@ -6,7 +6,7 @@ espèce par n° ou par nom (« Rattata d’Alola » inclus), dates AAAA-MM-JJ ou
 
 Lit aussi l'export d'un tracker de shiny (voir export.to_tracker_csv) : fichier en sections
 précédées d'un titre (« Shiny obtenus - … », « Shiny manqués », « Shasses en cours ») : les shiny
-obtenus vont dans la collection, les chasses en cours dans le compteur, les shiny manqués sont ignorés ; jeux par version (« Violet », « Argent Soulsilver »), genre « A »
+obtenus vont dans la collection, les chasses en cours dans le compteur, les shiny manqués dans leur liste ; jeux par version (« Violet », « Argent Soulsilver »), genre « A »
 pour asexué, colonnes « Lieu » / « Charme chroma » reprises, version gardée dans la note.
 """
 import csv
@@ -91,6 +91,7 @@ ALIASES = {
     "notes": ["note", "notes"],
     "location": ["lieu"],
     "charm": ["charme chroma", "charme_chroma"],
+    "reason": ["motif du fail", "motif", "raison"],
     "sprite_url": ["sprite_personnalise", "sprite"],
     "phase_number": ["numero_phase"],
     "target_id": ["id_cible"],
@@ -247,6 +248,31 @@ def _parse_hunt(line, row, errors):
     }
 
 
+def _parse_fail(line, row, errors):
+    """Ligne de la section « Shiny manqués » -> shiny manqué (ou None si erreur)."""
+    problems = []
+    dex, form, game, method, failed_on, encounters = _parse_common(row, problems)
+    gender = None
+    if row.get("gender"):
+        gender = GENDER_BY_NAME.get(row["gender"].lower()) or GENDER_BY_NAME.get(normalize(row["gender"]))
+        if gender is None:
+            problems.append(f"genre inconnu « {row['gender']} »")
+    duration = parse_duration(row["duration"]) if row.get("duration") else None
+    if problems:
+        errors.append((line, "shiny manqué : " + " ; ".join(problems)))
+        return None
+    location, shiny_charm = _location_charm(row)
+    return {
+        "line": line,
+        "data": {
+            "species_id": dex, "form": form, "game": game, "method": method, "gender": gender,
+            "encounters": encounters, "duration": duration, "location": location, "shiny_charm": shiny_charm,
+            "reason": (row.get("reason") or "")[:200] or None, "failed_on": failed_on,
+            "notes": (row.get("notes") or "")[:1000] or None,
+        },
+    }
+
+
 def _parse_shiny(line, row, errors, unknown_gender):
     """Ligne de shiny obtenu -> shiny de la collection (ou None si erreur)."""
     problems = []
@@ -307,41 +333,42 @@ def _parse_shiny(line, row, errors, unknown_gender):
 
 
 def parse(text):
-    """Analyse le CSV ; renvoie (shiny valides, chasses en cours valides,
+    """Analyse le CSV ; renvoie (shiny valides, chasses en cours valides, shiny manqués valides,
     erreurs [(n° de ligne, message)], remarques [texte])."""
     text = text.lstrip("﻿")
     if not text.strip():
-        return [], [], [(0, "Le fichier est vide.")], []
+        return [], [], [], [(0, "Le fichier est vide.")], []
     sample = next((l for l in text.splitlines() if ";" in l or "," in l), "")
     delimiter = ";" if sample.count(";") >= sample.count(",") else ","
 
-    rows, hunts, errors, notices, unknown_gender = [], [], [], [], []
+    rows, hunts, fails, errors, notices, unknown_gender = [], [], [], [], [], []
     sections = _sections(text, delimiter)
     if not sections:
-        return [], [], [(1, "Aucune ligne d'en-tête trouvée.")], []
+        return [], [], [], [(1, "Aucune ligne d'en-tête trouvée.")], []
     for section in sections:
         title = section["title"] or ""
-        if FAILED_SECTION.search(title):
-            notices.append(f"Section « {title} » ignorée ({_plural(len(section['rows']), 'ligne')}) : "
-                           "les shiny manqués ne sont pas importés.")
-            continue
-        is_hunts = bool(HUNTS_SECTION.search(title))
+        is_fails = bool(FAILED_SECTION.search(title))
+        is_hunts = not is_fails and bool(HUNTS_SECTION.search(title))
         columns = _columns(section["header"])
         if not ({"dex", "species", "full_name"} & columns.keys()):
             errors.append((section["header_line"], "Colonne Pokémon introuvable : il faut « n_pokedex », « espece » ou « nom_complet »."))
             continue
-        required = (("game", "jeu"), ("method", "methode")) + ((("gender", "genre"),) if not is_hunts else ())
+        required = (("game", "jeu"), ("method", "methode")) + ((("gender", "genre"),) if not (is_hunts or is_fails) else ())
         missing = [label for key, label in required if key not in columns]
         if missing:
             errors.append((section["header_line"], f"Colonne « {missing[0]} » introuvable."))
             continue
 
         for line, values in section["rows"]:
-            if len(rows) + len(hunts) + len(errors) >= MAX_ROWS:
+            if len(rows) + len(hunts) + len(fails) + len(errors) >= MAX_ROWS:
                 errors.append((line, f"Limite de {MAX_ROWS} lignes atteinte : la suite est ignorée."))
-                return rows, hunts, errors, notices
+                return rows, hunts, fails, errors, notices
             row = {key: _unescape(values[i] if i < len(values) else "") for key, i in columns.items()}
-            if is_hunts:
+            if is_fails:
+                fail = _parse_fail(line, row, errors)
+                if fail:
+                    fails.append(fail)
+            elif is_hunts:
                 hunt = _parse_hunt(line, row, errors)
                 if hunt:
                     hunts.append(hunt)
@@ -354,13 +381,18 @@ def parse(text):
         shown = ", ".join(map(str, unknown_gender[:20])) + (" …" if len(unknown_gender) > 20 else "")
         notices.append(f"Sexe non renseigné ({_plural(len(unknown_gender), 'ligne')} : {shown}) : "
                        "enregistré comme asexué, à corriger si besoin.")
-    return rows, hunts, errors, notices
+    return rows, hunts, fails, errors, notices
 
 
 def fingerprint(data):
     """Identité d'un shiny pour repérer les doublons (même Pokémon, jeu, genre, date, surnom, rencontres)."""
     return (data["species_id"], data["form"], data["game"], data["gender"],
             data["caught_on"], data["nickname"], data["encounters"])
+
+
+def fail_fingerprint(data):
+    """Identité d'un shiny manqué : même Pokémon, forme, jeu, date, rencontres et motif."""
+    return (data["species_id"], data["form"], data["game"], data["failed_on"], data["encounters"], data["reason"])
 
 
 def hunt_fingerprint(data):

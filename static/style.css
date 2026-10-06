@@ -152,6 +152,16 @@ a.record:hover strong { color: var(--accent); }
 .detail-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin-top: 1.5rem; }
 .detail-actions button, .detail-actions .btn { width: auto; margin: 0; }
 
+.fail img { filter: saturate(0.6); }
+.fail-reason { margin: 0.3rem 0; font-size: 0.85rem; color: var(--danger); font-weight: 600; }
+a.kpi { color: inherit; text-decoration: none; }
+a.kpi:hover .kpi-value { color: var(--accent); }
+.found-actions { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+.fail-link { font-size: 0.9rem; color: var(--muted); }
+li.missed img { filter: saturate(0.5); opacity: 0.8; }
+li.missed em { color: var(--danger); font-style: normal; }
+.fail-link:hover { color: var(--danger); }
+
 .phase-badge {
   margin: 0 0 0.6rem;
   padding: 0.15rem 0.6rem;

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "_macros.html" import form_picker with context %}
+{% block title %}{{ 'Modifier' if fail else 'Ajouter' }} un shiny manqué · KRABHUNT{% endblock %}
+{% block content %}
+<section class="card form-card">
+  <h1>{{ 'Modifier' if fail else 'Ajouter' }} un shiny manqué</h1>
+  {% if hunt %}
+    <p class="hint">😭 Shiny manqué pendant la chasse au compteur : les informations sont pré-remplies.
+      La chasse continue, son compteur n'est pas modifié.</p>
+  {% endif %}
+  <form method="post">
+    {% if hunt %}<input type="hidden" name="chasse" value="{{ hunt.id }}">{% endif %}
+    <label for="species">Pokémon</label>
+    <input id="species" name="species" list="pokedex" required autocomplete="off"
+           placeholder="ex. Pikachu" value="{{ form.species or '' }}">
+    <datalist id="pokedex">
+      {% for dex, name in pokedex.items() %}<option value="{{ name }}">#{{ dex }}</option>{% endfor %}
+    </datalist>
+    {{ form_picker('species', form.form) }}
+
+    <label for="reason">Motif <span class="opt">(facultatif)</span></label>
+    <input id="reason" name="reason" list="reasons" maxlength="200" value="{{ form.reason or '' }}"
+           placeholder="ex. Fuite, K.O. par erreur…">
+    <datalist id="reasons">
+      {% for r in reasons %}<option value="{{ r }}">{% endfor %}
+    </datalist>
+
+    <label for="game">Jeu</label>
+    <select id="game" name="game" required>
+      <option value="" disabled {% if not form.game %}selected{% endif %}>Choisir un jeu…</option>
+      {% for family_label, family_games in families.values() %}
+        {% if family_games | length > 1 %}<optgroup label="{{ family_label }}">{% endif %}
+        {% for key in family_games %}
+          <option value="{{ key }}" {% if key == form.game %}selected{% endif %}>{{ games[key][0] }}</option>
+        {% endfor %}
+        {% if family_games | length > 1 %}</optgroup>{% endif %}
+      {% endfor %}
+    </select>
+
+    <label for="method">Méthode</label>
+    <input id="method" name="method" list="methods" required autocomplete="off" value="{{ form.method or '' }}"
+           data-methods-game="game" data-methods-charm="shiny_charm" data-methods-hint="method-odds">
+    <datalist id="methods"></datalist>
+    <p class="hint" id="method-odds" aria-live="polite"></p>
+    <script type="application/json" id="methods-data">{{ methods | tojson }}</script>
+
+    <label for="location">Lieu <span class="opt">(facultatif)</span></label>
+    <input id="location" name="location" maxlength="100" value="{{ form.location or '' }}">
+
+    <label class="checkbox">
+      <input type="checkbox" id="shiny_charm" name="shiny_charm" value="1"
+             {% if form.shiny_charm | string == '1' %}checked{% endif %}> Charme chroma
+    </label>
+
+    <div class="row">
+      <div>
+        <label for="encounters">Rencontres <span class="opt">(facultatif)</span></label>
+        <input id="encounters" name="encounters" type="number" min="0" step="1"
+               inputmode="numeric" value="{{ form.encounters }}">
+      </div>
+      <div>
+        <label for="duration">Temps <span class="opt">(H:MM:SS)</span></label>
+        <input id="duration" name="duration" placeholder="ex. 2:30:00" value="{{ form.duration or '' }}">
+      </div>
+    </div>
+
+    <fieldset>
+      <legend>Genre <span class="opt">(facultatif)</span></legend>
+      <label class="radio"><input type="radio" name="gender" value="" {% if not form.gender %}checked{% endif %}> Inconnu</label>
+      {% for key, label in genders.items() %}
+        <label class="radio">
+          <input type="radio" name="gender" value="{{ key }}" {% if key == form.gender %}checked{% endif %}> {{ label }}
+        </label>
+      {% endfor %}
+    </fieldset>
+
+    <label for="failed_on">Date <span class="opt">(facultatif)</span></label>
+    <input id="failed_on" name="failed_on" type="date" value="{{ form.failed_on or '' }}">
+
+    {% if hunt %}
+    <label class="checkbox">
+      <input type="checkbox" name="phase" value="1" {% if not form or form.phase != '0' %}checked{% endif %}>
+      Compter comme phase de la chasse de {{ hunt_label }}
+    </label>
+    <input type="hidden" name="phase" value="0">
+    {% endif %}
+
+    <label for="notes">Note <span class="opt">(facultatif)</span></label>
+    <textarea id="notes" name="notes" rows="3" maxlength="1000">{{ form.notes or '' }}</textarea>
+
+    <button type="submit">{{ 'Enregistrer' if fail else 'Ajouter aux shiny manqués' }}</button>
+  </form>
+</section>
+<script src="{{ url_for('static', filename='methods.js') }}"></script>
+{% endblock %}

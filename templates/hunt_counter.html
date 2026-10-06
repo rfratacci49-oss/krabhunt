@@ -42,6 +42,7 @@
     <button type="button" class="minus" id="minus" aria-label="Retirer">−</button>
     <button type="button" class="plus" id="plus">+<span id="step-label">{{ hunt.step }}</span></button>
   </div>
+  <p class="muted-small" id="rate"></p>
   <p class="hint">Raccourcis : <kbd>Espace</kbd> ou <kbd>+</kbd> pour ajouter, <kbd>−</kbd> pour retirer.</p>
 
   <details class="counter-settings">
@@ -89,17 +90,20 @@
     </form>
   </details>
 
-  <a class="btn btn-found" href="{{ url_for('shiny_new', chasse=hunt.id) }}">🎉 {{ hunt.species }} shiny trouvé !</a>
+  <div class="found-actions">
+    <a class="btn btn-found" href="{{ url_for('shiny_new', chasse=hunt.id) }}">🎉 {{ hunt.species }} shiny trouvé !</a>
+    <a class="fail-link" href="{{ url_for('fail_new', chasse=hunt.id) }}">😭 Shiny manqué (la chasse continue)</a>
+  </div>
 </div>
 
 {% if phases %}
 <section class="pending-phases">
   <h2>Phases de cette chasse</h2>
   <ol>
-    {% for p in phases %}
-    <li>
+    {% for phase in phases %}{% set p = phase.view %}
+    <li{% if phase.fail %} class="missed"{% endif %}>
       <img data-sprites='{{ p.sprites | tojson }}' alt="" loading="lazy">
-      <span><strong>Phase {{ loop.index }}</strong> · {{ p.name }}
+      <span><strong>Phase {{ loop.index }}</strong> · {% if phase.fail %}😭 {{ p.species }} <em>manqué{% if p.reason %} ({{ p.reason }}){% endif %}</em>{% else %}{{ p.name }}{% endif %}
         {% if p.ball_icon %}<img class="phase-ball" src="{{ p.ball_icon }}" alt="{{ p.ball_label }}" title="{{ p.ball_label }}" width="20" height="20">
         {% elif p.ball_label %}<small>{{ p.ball_label }}</small>{% endif %}
         {% if p.encounters is not none %}<small>rencontre {{ '{:,}'.format(p.encounters).replace(',', ' ') }}</small>{% endif %}
@@ -189,8 +193,21 @@
 
     const odds = {{ hunt.odds or 0 }};
     const proba = document.getElementById("proba");
+    const rateLine = document.getElementById("rate");
+    let elapsed = {{ hunt.elapsed }};  // temps actif (secondes), tenu par le serveur
+    const duration = s => s >= 3600 ? `${Math.floor(s / 3600)} h ${String(Math.floor(s % 3600 / 60)).padStart(2, "0")}`
+                                    : `${Math.max(1, Math.round(s / 60))} min`;
     const render = () => {
       out.textContent = fmt(count); setInput.value = count;
+      if (elapsed >= 60 && count > 0) {
+        const perHour = Math.round(count * 3600 / elapsed);
+        let text = `≈ ${fmt(perHour)} rencontres / heure · temps actif ${duration(elapsed)}`;
+        // Temps restant pour atteindre le taux, à ce rythme
+        if (odds > 1 && count < odds) text += ` · taux atteint dans ~${duration((odds - count) * 3600 / perHour)}`;
+        rateLine.textContent = text;
+      } else {
+        rateLine.textContent = "Le rythme (rencontres / heure) s'affiche après quelques minutes de comptage.";
+      }
       if (proba) {
         // Probabilité d'avoir eu au moins un shiny en `count` rencontres
         const p = 1 - Math.pow(1 - 1 / odds, count);
@@ -210,6 +227,7 @@
         });
         if (!res.ok) throw new Error(res.status);
         const data = await res.json();
+        elapsed = data.elapsed;
         if (--pending === 0) { count = data.count; step = data.step; render(); }
       } catch (e) {
         pending--;

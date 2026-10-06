@@ -102,7 +102,7 @@
     <input id="caught_on" name="caught_on" type="date" value="{{ form.caught_on or '' }}">
 
     <fieldset class="phases">
-      <legend>Phases <span class="opt">(shiny trouvés pendant la chasse sans être la cible)</span></legend>
+      <legend>Phases <span class="opt">(shiny trouvés ou manqués pendant la chasse sans être la cible)</span></legend>
       {% if phase_info %}
         <p class="hint">Ce shiny est la <strong>phase {{ phase_info[0] }}</strong> de la chasse de
           <strong>{{ phase_info[1].name }}</strong> : il ne peut pas avoir de phases lui-même.</p>

@@ -25,7 +25,7 @@
     <div>
       <strong>{{ h.species }}</strong>
       <span class="muted-small">{{ h.game_label }} · {{ h.method }}{% if h.location %} · {{ h.location }}{% endif %}{% if h.shiny_charm %} · ✨ Charme chroma{% endif %}</span>
-      {% if h.phases %}<span class="muted-small">Phase {{ h.phases + 1 }} en cours</span>{% endif %}
+      {% if h.phases or h.rate %}<span class="muted-small">{% if h.phases %}Phase {{ h.phases + 1 }} en cours{% endif %}{% if h.phases and h.rate %} · {% endif %}{% if h.rate %}≈ {{ h.rate | nombre }} / heure{% endif %}</span>{% endif %}
     </div>
     {% if h.mode == "timer" %}
     <span class="hunt-count" title="{{ 'En cours' if h.started_at else 'En pause' }}">{{ '⏱' if h.started_at else '⏸' }} {{ h.elapsed_now | chrono }}</span>

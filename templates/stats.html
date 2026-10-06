@@ -95,6 +95,20 @@
       <span class="kpi-sub">en moyenne · médiane {{ s.duration_median | duree }}</span>
     </div>
     {% endif %}
+    {% if fails_count %}
+    <a class="kpi" href="{{ url_for('collection_fails', username=owner.username, collection=coll) }}">
+      <span class="kpi-label">Shiny manqués</span>
+      <span class="kpi-value">{{ fails_count | nombre }}</span>
+      <span class="kpi-sub">fuites, K.O. par erreur…</span>
+    </a>
+    {% endif %}
+    {% if s.rate_known %}
+    <div class="kpi">
+      <span class="kpi-label">Rencontres par heure</span>
+      <span class="kpi-value">{{ s.rate_avg | nombre }}</span>
+      <span class="kpi-sub">en moyenne, sur {{ s.rate_known }} shiny avec rencontres et temps</span>
+    </div>
+    {% endif %}
     <div class="kpi">
       <span class="kpi-label">Phases</span>
       <span class="kpi-value">{{ s.phases | nombre }}</span>

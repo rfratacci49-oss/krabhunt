@@ -196,6 +196,19 @@ au-dessus du seuil, +1 via l'API, puis le compteur attend que la zone disparaiss
 (une rencontre = un comptage). `--essai` détecte sans envoyer, `--apercu` affiche la zone surveillée.
 Profils et captures des détections dans `tools/profils/`.
 
+**Rencontres par heure** : une chasse aux rencontres mesure son temps actif (temps entre deux clics,
+les pauses de plus de 5 minutes exclues). Le compteur affiche le rythme et le temps restant pour
+atteindre le taux ; à la fin de la chasse, ce temps remplit « Temps de chasse », d'où le rythme sur
+la fiche du shiny et la moyenne dans les statistiques.
+
+**Shiny manqués** (`/u/<pseudo>/manques`, une liste par collection) : fuite, K.O. par erreur…
+Ajout depuis la page de la chasse (« 😭 Shiny manqué », pré-rempli, la chasse continue ; il compte
+comme phase de la chasse, case décochable) ou depuis la liste ; motif, rencontres, temps, lieu, date.
+Un shiny manqué peut être une phase (choisi dans la liste des phases de la fiche d'un shiny) : il est
+numéroté avec les autres phases et affiché « manqué ». Ils ne comptent pas dans la collection, mais
+apparaissent dans les statistiques et dans la section « Shiny manqués » du format tracker (export
+et import).
+
 **Multi-compteur** (`/compteur/multi`) : cocher plusieurs chasses dans la liste puis « Ouvrir
 dans le multi-compteur » les affiche côte à côte. Touches `1` à `9` : ajouter au compteur
 correspondant (`Maj` + chiffre pour retirer ; démarre / met en pause un timer) ; `Espace` :

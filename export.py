@@ -75,8 +75,8 @@ def _date_fr(iso):
     return f"{iso[8:10]}/{iso[5:7]}/{iso[:4]}" if iso else ""
 
 
-def to_tracker_csv(shinies, title, hunts=()):
-    """CSV en sections façon tracker de shiny : shiny obtenus, shiny manqués (vide), chasses en cours.
+def to_tracker_csv(shinies, title, hunts=(), fails=()):
+    """CSV en sections façon tracker de shiny : shiny obtenus, shiny manqués, chasses en cours.
 
     La version du jeu est reprise de la note, où l'import la range.
     """
@@ -101,6 +101,18 @@ def to_tracker_csv(shinies, title, hunts=()):
     writer.writerow([])
     writer.writerow(["Shiny manqués"])
     writer.writerow(TRACKER_FAILED_HEADER)
+    for f in fails:
+        writer.writerow([_safe(v) for v in (
+            f["species"],
+            TRACKER_GENDERS.get(f["gender"], ""),
+            "" if f["encounters"] is None else f["encounters"],
+            f["method"],
+            f["game_label"],
+            f["location"] or "",
+            "oui" if f["shiny_charm"] else "non",
+            f["reason"] or "",
+            _date_fr(f["failed_on"]),
+        )])
     writer.writerow([])
     writer.writerow(["Shasses en cours"])
     writer.writerow(TRACKER_HUNT_HEADER)

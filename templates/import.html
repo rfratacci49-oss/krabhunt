@@ -35,7 +35,7 @@
       <code>rencontres</code>, <code>poke_ball</code>, <code>lieu</code>, <code>charme_chroma</code> (oui/non), <code>note</code>.</li>
     <li>L'export d'un tracker de shiny (sections « Shiny obtenus », « Shiny manqués », « Shasses en cours »)
       est aussi accepté : les shiny obtenus vont dans la collection, les chasses en cours dans le
-      compteur ; les shiny manqués sont ignorés. Lieu et charme chroma sont repris ; la version
+      compteur, les shiny manqués dans leur liste. Lieu et charme chroma sont repris ; la version
       du jeu (« Violet ») est gardée en tête de la note, et ressort avec <strong>« ⬇ Format tracker »</strong>.</li>
     <li>Jeux, Balls et genres s'écrivent en toutes lettres, comme sur le site (« HeartGold / SoulSilver »,
       « Sombre Ball », « Femelle »), accents et majuscules facultatifs.</li>
@@ -51,7 +51,10 @@ Rattata d’Alola;Ultra-Soleil / Ultra-Lune;Appel à l'aide (SOS);Femelle;;35;</
   {% if hunts or hunt_duplicates %}
   <div class="kpi"><span class="kpi-label">Chasses en cours</span><span class="kpi-value">{{ hunts | length }}</span></div>
   {% endif %}
-  <div class="kpi"><span class="kpi-label">Doublons ignorés</span><span class="kpi-value">{{ duplicates | length + hunt_duplicates | length }}</span></div>
+  {% if fails or fail_duplicates %}
+  <div class="kpi"><span class="kpi-label">Shiny manqués</span><span class="kpi-value">{{ fails | length }}</span></div>
+  {% endif %}
+  <div class="kpi"><span class="kpi-label">Doublons ignorés</span><span class="kpi-value">{{ duplicates | length + hunt_duplicates | length + fail_duplicates | length }}</span></div>
   <div class="kpi"><span class="kpi-label">Lignes en erreur</span><span class="kpi-value">{{ errors | length }}</span></div>
 </section>
 
@@ -118,13 +121,35 @@ Rattata d’Alola;Ultra-Soleil / Ultra-Lune;Appel à l'aide (SOS);Femelle;;35;</
 </div>
 {% endif %}
 
+{% if fails_preview %}
+<h2 class="preview-title">Shiny manqués</h2>
+<div class="table-scroll">
+  <table class="preview-table">
+    <thead><tr><th></th><th>Pokémon</th><th>Jeu</th><th>Méthode</th><th>Rencontres</th><th>Motif</th><th>Date</th></tr></thead>
+    <tbody>
+      {% for f in fails_preview %}
+      <tr>
+        <td><img data-sprites='{{ f.sprites | tojson }}' alt="" width="40" height="40"></td>
+        <td>{{ f.species }}</td>
+        <td>{{ f.game_label }}</td>
+        <td>{{ f.method }}</td>
+        <td>{{ f.encounters | nombre if f.encounters is not none else "" }}</td>
+        <td>{{ f.reason or "" }}</td>
+        <td>{{ f.failed_on | date_fr }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
 <div class="import-actions">
-  {% if to_import or hunts %}
+  {% if to_import or hunts or fails %}
   <form method="post">
     <input type="hidden" name="action" value="confirm">
     <input type="hidden" name="doublons" value="{{ 'ignorer' if skip_duplicates else 'garder' }}">
     <textarea name="csv" hidden>{{ csv }}</textarea>
-    <button type="submit">Importer {% if to_import %}{{ to_import | length }} shiny{% endif %}{% if to_import and hunts %} et {% endif %}{% if hunts %}{{ hunts | length }} chasse{{ "s" if hunts | length > 1 }} en cours{% endif %}</button>
+    <button type="submit">Importer {% if to_import %}{{ to_import | length }} shiny{% endif %}{% if to_import and hunts %} et {% endif %}{% if hunts %}{{ hunts | length }} chasse{{ "s" if hunts | length > 1 }} en cours{% endif %}{% if fails %}{{ " et " if to_import or hunts }}{{ fails | length }} shiny manqué{{ "s" if fails | length > 1 }}{% endif %}</button>
   </form>
   {% else %}
   <p class="empty">Rien à importer.</p>

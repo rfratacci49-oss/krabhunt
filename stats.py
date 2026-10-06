@@ -107,6 +107,9 @@ def compute(shinies):
     encounters = [s["encounters"] for s in with_enc]
     with_time = [s for s in shinies if s["duration"] is not None]
     durations = [s["duration"] for s in with_time]
+    # Rythme : seulement les shiny qui ont à la fois des rencontres et un temps (au moins une minute)
+    paced = [s for s in with_time if s["encounters"] and s["duration"] >= 60]
+    paced_time = sum(s["duration"] for s in paced)
     dated = [s for s in shinies if s["caught_on"]]
     dates = [date.fromisoformat(s["caught_on"]) for s in dated]
     species = {s["species_id"] for s in shinies}
@@ -172,6 +175,8 @@ def compute(shinies):
         "duration_avg": round(sum(durations) / len(durations)) if durations else None,
         "duration_median": round(median(durations)) if durations else None,
         "duration_buckets": duration_buckets,
+        "rate_avg": round(sum(s["encounters"] for s in paced) * 3600 / paced_time) if paced_time else None,
+        "rate_known": len(paced),
         "hunts_with_phases": len(targets),
         "phases": len(phases),
         "undated": total - len(dated),

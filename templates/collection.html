@@ -18,7 +18,7 @@
 {{ collection_tabs('collection') }}
 <div class="toolbar">
   <h1>{{ "Ma collection" if is_owner else "Collection de " ~ owner.username }}{% if coll != 'principale' %} {{ coll_label }}{% endif %} <span class="count">{{ total }}</span></h1>
-  {% if total or is_owner %}
+  {% if total or is_owner or fails_count %}
   <span class="toolbar-links">
     {% if total %}
     <a href="{{ url_for('collection_shinydex', username=owner.username, collection=coll) }}">✨ Shinydex</a>
@@ -28,8 +28,9 @@
       ⬇ Exporter en CSV{% if active %} ({{ shown }}){% endif %}
     </a>
     <a href="{{ url_for('collection_export_tracker', username=owner.username, collection=coll, **request.args.to_dict()) }}"
-       title="CSV au format du tracker de shiny (sections Shiny obtenus / Shasses en cours)">⬇ Format tracker</a>
+       title="CSV au format du tracker de shiny (sections Shiny obtenus / Shiny manqués / Shasses en cours)">⬇ Format tracker</a>
     {% endif %}
+    {% if fails_count or is_owner %}<a href="{{ url_for('collection_fails', username=owner.username, collection=coll) }}">😭 Shiny manqués{% if fails_count %} ({{ fails_count }}){% endif %}</a>{% endif %}
     {% if is_owner %}<a href="{{ url_for('collection_import') }}">⬆ Importer</a>{% endif %}
   </span>
   {% endif %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import collection_tabs with context %}
+{% block title %}Shiny manqués · {{ owner.username }} · KRABHUNT{% endblock %}
+{% block content %}
+{{ collection_tabs('collection_fails') }}
+<div class="toolbar">
+  <h1>{{ "Mes shiny manqués" if is_owner else "Shiny manqués de " ~ owner.username }}{% if coll != 'principale' %} · {{ coll_label }}{% endif %}
+    <span class="count">{{ fails | length }}</span></h1>
+  <span class="toolbar-links">
+    {% if is_owner %}<a href="{{ url_for('fail_new') }}">+ Ajouter un shiny manqué</a>{% endif %}
+    <a href="{{ url_for('collection', username=owner.username, collection=coll) }}">← {{ "Ma collection" if is_owner else "Collection" }}</a>
+  </span>
+</div>
+
+{% if fails %}
+<div class="grid">
+  {% for f in fails %}
+  <article class="shiny fail">
+    <img data-sprites='{{ f.sprites | tojson }}' alt="{{ f.species }} shiny" loading="lazy">
+    <h2>{{ f.species }}</h2>
+    <p class="dex">#{{ '%04d' % f.species_id }}{% if f.gender %} <span class="gender g-{{ f.gender }}" title="{{ f.gender_label }}">{{ f.gender_label[0] }}</span>{% endif %}</p>
+    {% if f.reason %}<p class="fail-reason">😭 {{ f.reason }}</p>{% endif %}
+    {% if f.phase_number %}
+      <p class="phase-badge">Phase {{ f.phase_number }} <span>· chasse de
+        {% if f.phase_target_id %}<a href="{{ url_for('shiny_detail', shiny_id=f.phase_target_id) }}">{{ f.phase_target }}</a>{% else %}{{ f.phase_target }}{% endif %}</span></p>
+    {% endif %}
+    <dl>
+      <dt>Jeu</dt><dd>{{ f.game_label }}</dd>
+      <dt>Méthode</dt><dd>{{ f.method }}{% if f.odds and f.odds > 1 %} <span class="odds">1/{{ f.odds | nombre }}</span>{% endif %}</dd>
+      {% if f.location %}<dt>Lieu</dt><dd>{{ f.location }}</dd>{% endif %}
+      {% if f.shiny_charm %}<dt>Charme</dt><dd>✨ Charme chroma</dd>{% endif %}
+      {% if f.encounters is not none %}<dt>Rencontres</dt><dd>{{ f.encounters | nombre }}</dd>{% endif %}
+      {% if f.duration is not none %}<dt>Temps</dt><dd>⏱ {{ f.duration | duree }}</dd>{% endif %}
+      {% if f.failed_on %}<dt>Date</dt><dd>{{ f.failed_on | date_fr }}</dd>{% endif %}
+    </dl>
+    {% if f.notes %}<p class="notes">{{ f.notes }}</p>{% endif %}
+    {% if is_owner %}
+    <div class="actions">
+      <a href="{{ url_for('fail_edit', fail_id=f.id) }}">Modifier</a>
+      <form action="{{ url_for('fail_delete', fail_id=f.id) }}" method="post"
+            onsubmit="return window.confirm('Supprimer ce shiny manqué ?')">
+        <button type="submit" class="link danger">Supprimer</button>
+      </form>
+    </div>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">Aucun shiny manqué{{ " pour l'instant 🍀" if is_owner }}.</p>
+{% endif %}
+{% endblock %}
